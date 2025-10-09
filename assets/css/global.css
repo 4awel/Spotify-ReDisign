@@ -1,0 +1,33 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@font-face {
+    font-family: 'CircularStdBold';
+    src: url('../font/CircularStd-Bold.ttf') format('ttf');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'CircularStdMedium';
+    src: url('../font/CircularStd-Medium.ttf') format('ttf');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: 'CircularStdMedium', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #000000;
+  color: #ffffff;
+}
