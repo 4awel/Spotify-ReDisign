@@ -1,0 +1,148 @@
+<template>
+  <header class="header">
+    <div class="header__left">
+      <nav class="nav">
+        <!-- Кнопки навигации -->
+        <button 
+          v-for="(button, index) in btnRoute.buttons" 
+          :key="index" 
+          class="nav__button"
+          :class="{ 'nav__button--active': activeButton === index }"
+          @click="setActiveButton(index)"
+        >
+          <img :src="button.image" :alt="button.title" class="nav__icon" />
+          <span class="nav__text">{{ button.title }}</span>
+        </button>
+        
+        <!-- Поиск -->
+        <div class="search">
+          <label for="search" class="search__label">
+            <div class="search__icon">
+              <img :src="btnRoute.inputs[0]?.image" alt="Search" />
+            </div>
+          </label>
+          <input 
+            id="search"
+            type="text" 
+            placeholder="Search" 
+            class="search__input"
+            v-model="searchQuery"
+          />
+        </div>
+      </nav>
+    </div>
+    
+    <div class="header__right">
+      <!-- Группа действий -->
+      <div class="actions">
+        <button 
+          v-for="(action, index) in groupAction" 
+          :key="index" 
+          class="actions__button"
+          @click="handleAction(index)"
+        >
+          <img :src="action.image" :alt="`action-${index}`" class="actions__icon" />
+        </button>
+        
+        <!-- Аватар -->
+        <button class="avatar" @click="toggleProfileMenu">
+          <img src="https://avatars.mds.yandex.net/i?id=d5228bcdeca0d1ed3fdba49e072ff56d_l-15153803-images-thumbs&n=13" alt="User avatar" class="avatar__image" />
+        </button>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref } from "vue";
+
+// SVG NAV
+import header0 from '@/assets/svg/header/header-0.svg'
+import header1 from '@/assets/svg/header/header-1.svg'
+import header2 from '@/assets/svg/header/header-2.svg'
+// SVG ACTION
+import headerAction0 from '@/assets/svg/header/header-action-0.svg'
+import headerAction1 from '@/assets/svg/header/header-action-1.svg'
+import headerAction2 from '@/assets/svg/header/header-action-2.svg'
+import headerAction3 from '@/assets/svg/header/header-action-3.svg'
+
+interface HeaderType {
+  image: string;
+  title: string;
+}
+
+interface ActionType {
+  image: string;
+}
+
+export default defineComponent({
+  setup() {
+    const activeButton = ref(0);
+    const searchQuery = ref('');
+    const isProfileMenuOpen = ref(false);
+
+    const btnRoute = {
+      buttons: [
+        {
+          image: header0,
+          title: "Home",
+        },
+        {
+          image: header1,
+          title: "Discover",
+        },
+      ] as HeaderType[],
+      inputs: [
+        {
+          image: header2,
+          title: "Search",
+        },
+      ] as HeaderType[],
+    };
+
+    const groupAction = [
+      {
+        image: headerAction0,
+      },
+      {
+        image: headerAction1,
+      },
+      {
+        image: headerAction2,
+      },
+      {
+        image: headerAction3,
+      },
+    ] as ActionType[];
+
+    const setActiveButton = (index: number) => {
+      activeButton.value = index;
+      // Здесь можно добавить логику навигации
+    };
+
+    const handleAction = (index: number) => {
+      // Обработка действий (уведомления, настройки и т.д.)
+      console.log('Action clicked:', index);
+    };
+
+    const toggleProfileMenu = () => {
+      isProfileMenuOpen.value = !isProfileMenuOpen.value;
+    };
+
+    return {
+      btnRoute,
+      groupAction,
+      activeButton,
+      searchQuery,
+      isProfileMenuOpen,
+      setActiveButton,
+      handleAction,
+      toggleProfileMenu
+    };
+  },
+});
+</script>
+
+<style lang="scss" scoped>
+@import '../layout/styles/Header.scss';
+</style>

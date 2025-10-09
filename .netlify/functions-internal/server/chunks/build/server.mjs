@@ -1,7 +1,7 @@
-import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { hasInjectionContext, getCurrentInstance, defineComponent, createElementBlock, shallowRef, provide, cloneVNode, h, defineAsyncComponent, inject, computed, unref, shallowReactive, ref, Suspense, Fragment, createApp, toRef, onErrorCaptured, onServerPrefetch, createVNode, resolveDynamicComponent, reactive, effectScope, isReadonly, isRef, isShallow, isReactive, toRaw, getCurrentScope, withCtx, nextTick, mergeProps, useSSRContext } from 'vue';
+import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { defineComponent, ref, inject, h, Suspense, provide, shallowReactive, Fragment, hasInjectionContext, getCurrentInstance, createElementBlock, shallowRef, cloneVNode, defineAsyncComponent, computed, unref, createApp, toRef, onErrorCaptured, onServerPrefetch, createVNode, resolveDynamicComponent, reactive, effectScope, isReadonly, isRef, isShallow, isReactive, toRaw, getCurrentScope, withCtx, nextTick, mergeProps, useSSRContext } from 'vue';
 import { i as hasProtocol, l as isScriptProtocol, j as joinURL, w as withQuery, s as sanitizeStatusCode, m as getContext, $ as $fetch, n as baseURL, o as createHooks, q as executeAsync, e as createError$1, t as toRouteMatcher, r as createRouter$1, v as defu } from '../nitro/nitro.mjs';
 import { createPinia, setActivePinia, shouldHydrate } from 'pinia';
-import { useRoute as useRoute$1, RouterView, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
+import { RouterView, useRoute as useRoute$1, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 import { ssrRenderSuspense, ssrRenderComponent, ssrRenderVNode } from 'vue/server-renderer';
 import 'node:http';
 import 'node:https';
@@ -397,7 +397,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-CjJX86Km.mjs')
+    component: () => import('./index-C6DJTRSs.mjs')
   }
 ];
 const _wrapInTransition = (props, children) => {
@@ -797,7 +797,7 @@ const plugins = [
   components_plugin_4kY4pyzJIYX99vmMAAIorFf3CnAaptHitJgf7JxiED8
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-ClbLwPqC.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-CuH_AWbL.mjs').then((m) => m.default || m))
 };
 const LayoutLoader = defineComponent({
   name: "LayoutLoader",
@@ -820,7 +820,7 @@ const nuxtLayoutProps = {
     default: null
   }
 };
-const __nuxt_component_0 = defineComponent({
+const __nuxt_component_0$1 = defineComponent({
   name: "NuxtLayout",
   inheritAttrs: false,
   props: nuxtLayoutProps,
@@ -958,7 +958,7 @@ const defineRouteProvider = (name = "RouteProvider") => defineComponent({
   }
 });
 const RouteProvider = defineRouteProvider();
-const __nuxt_component_2 = defineComponent({
+const __nuxt_component_0 = defineComponent({
   name: "NuxtPage",
   inheritAttrs: false,
   props: {
@@ -1018,9 +1018,9 @@ const _export_sfc = (sfc, props) => {
 };
 const _sfc_main$2 = {};
 function _sfc_ssrRender$1(_ctx, _push, _parent, _attrs) {
-  const _component_NuxtLayout = __nuxt_component_0;
+  const _component_NuxtLayout = __nuxt_component_0$1;
   const _component_NuxtRouteAnnouncer = __nuxt_component_1;
-  const _component_NuxtPage = __nuxt_component_2;
+  const _component_NuxtPage = __nuxt_component_0;
   _push(ssrRenderComponent(_component_NuxtLayout, _attrs, {
     default: withCtx((_, _push2, _parent2, _scopeId) => {
       if (_push2) {
@@ -1121,5 +1121,5 @@ let entry;
 }
 const entry$1 = (ssrContext) => entry(ssrContext);
 
-export { _export_sfc as _, useNuxtApp as a, useRuntimeConfig as b, nuxtLinkDefaults as c, entry$1 as default, navigateTo as n, resolveRouteObject as r, useRouter as u };
+export { _export_sfc as _, __nuxt_component_0 as a, useNuxtApp as b, useRuntimeConfig as c, nuxtLinkDefaults as d, entry$1 as default, navigateTo as n, resolveRouteObject as r, useRouter as u };
 //# sourceMappingURL=server.mjs.map

@@ -4,7 +4,9 @@
     <div class="main-content">
       <Header class="header" />
       <div class="pages-route">
-        <slot />
+        <div class="content-wrapper">
+          <NuxtPage />
+        </div>
         <FriendActivity class="activity" />
       </div>
       <Record class="record" />
@@ -12,143 +14,13 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'AppLayout'
-}
+<script setup lang="ts">
+// Логика компонента, если нужна
+import Sidebar from '~/components/layout/Sidebar.vue';
+import Header from '~/components/layout/Header.vue';
+import Record from '~/components/layout/Record.vue';
 </script>
 
-<style scoped>
-.container {
-  display: flex;
-  min-height: 100vh;
-  background: #000000;
-}
-
-.block-friends {
-  /* width: 100px; */
-  border: 2px solid #181818;
-  padding: 20px;
-}
-
-.sidebar {
-  width: 320px;
-  flex-shrink: 0;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  z-index: 100;
-}
-
-.main-content {
-  margin-left: 320px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  position: relative;
-  width: calc(100% - 320px);
-}
-
-.header {
-  padding: 38px 20px;
-  position: sticky;
-  top: 0;
-  z-index: 90;
-  background: #000000;
-}
-
-.pages-route {
-  /* flex: 1; */
-  display: flex;
-  /* flex-direction: column; */
-  gap: 8px;
-
-  padding: 0;
-  position: relative;
-  margin-bottom: 100px;
-  margin-right: 24px;
-  margin-left: 20px;
-
-
-  /* scroll-behavior: smooth; */
-  scrollbar-color: #1ED760 #000000;
-  overflow: scroll;
-}
-
-
-.record {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  width: calc(100% - 356px);
-  z-index: 95;
-  background: #181818;
-  border-radius: 20px;
-  margin: 0 20px;
-}
-
-/* Адаптивность */
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 280px;
-  }
-  
-  .main-content {
-    margin-left: 280px;
-    width: calc(100% - 280px);
-  }
-  
-  .record {
-    left: 280px;
-    width: calc(100% - 280px);
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: 110;
-  }
-  
-  .sidebar.mobile-open {
-    transform: translateX(0);
-  }
-  
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-  }
-  
-  .record {
-    left: 0;
-    width: 100%;
-  }
-  
-  .pages-route {
-    padding-bottom: 80px;
-  }
-}
-
-@media (max-width: 640px) {
-  .pages-route {
-    padding-bottom: 70px;
-  }
-}
-</style>
-
-<style>
-/* Глобальные стили выносим в отдельный блок без scoped */
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #000000;
-  overflow-x: hidden;
-}
-
-#__nuxt {
-  min-height: 100vh;
-  background: #000000;
-}
+<style lang="scss" scoped>
+@import './default.scss';
 </style>
