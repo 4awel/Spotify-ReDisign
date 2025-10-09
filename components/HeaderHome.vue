@@ -15,7 +15,7 @@
         </li>
       </nav>
       <div class="svg-menu">
-        <img src="../assets/svg/HomePage/menu.svg" alt="menu" />
+        <img src="../assets/svg/homePage/menu.svg" alt="menu" />
       </div>
     </div>
   </div>

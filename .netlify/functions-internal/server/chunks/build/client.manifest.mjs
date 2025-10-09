@@ -113,7 +113,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "B9-We7Yb.js",
+    "file": "CrC1Weg_.js",
     "name": "entry",
     "src": "node_modules/nuxt/dist/app/entry.js",
     "isEntry": true,
@@ -149,7 +149,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "DK2KVKy0.js",
+    "file": "D201rwkY.js",
     "name": "index",
     "src": "pages/index.vue",
     "isDynamicEntry": true,
@@ -168,8 +168,8 @@ const client_manifest = {
       "artist-3.DPg7EMQ4.jpeg"
     ]
   },
-  "index.B0LcD-Mb.css": {
-    "file": "index.B0LcD-Mb.css",
+  "index.CdZQVhKD.css": {
+    "file": "index.CdZQVhKD.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true

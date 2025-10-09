@@ -42,9 +42,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     ];
     return (_ctx, _push, _parent, _attrs) => {
       const _component_nuxt_link = __nuxt_component_0$1;
-      _push(`<div${ssrRenderAttrs(mergeProps({ class: "container-header-home" }, _attrs))} data-v-2e2d2a94><div class="header-home" data-v-2e2d2a94><nav class="home-group-btn" data-v-2e2d2a94><!--[-->`);
+      _push(`<div${ssrRenderAttrs(mergeProps({ class: "container-header-home" }, _attrs))} data-v-50b1782e><div class="header-home" data-v-50b1782e><nav class="home-group-btn" data-v-50b1782e><!--[-->`);
       ssrRenderList(groupBtn, (item, index2) => {
-        _push(`<li class="${ssrRenderClass([{ "active-header-btn": activeButton.value === index2 }, "home-btn-item"])}" data-v-2e2d2a94>`);
+        _push(`<li class="${ssrRenderClass([{ "active-header-btn": activeButton.value === index2 }, "home-btn-item"])}" data-v-50b1782e>`);
         _push(ssrRenderComponent(_component_nuxt_link, { class: "home-link" }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
@@ -59,7 +59,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         }, _parent));
         _push(`</li>`);
       });
-      _push(`<!--]--></nav><div class="svg-menu" data-v-2e2d2a94><img${ssrRenderAttr("src", _imports_0$1)} alt="menu" data-v-2e2d2a94></div></div></div>`);
+      _push(`<!--]--></nav><div class="svg-menu" data-v-50b1782e><img${ssrRenderAttr("src", _imports_0$1)} alt="menu" data-v-50b1782e></div></div></div>`);
     };
   }
 });
@@ -69,7 +69,7 @@ _sfc_main$2.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/HeaderHome.vue");
   return _sfc_setup$2 ? _sfc_setup$2(props, ctx) : void 0;
 };
-const __nuxt_component_0 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$2, [["__scopeId", "data-v-2e2d2a94"]]), { __name: "HeaderHome" });
+const __nuxt_component_0 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$2, [["__scopeId", "data-v-50b1782e"]]), { __name: "HeaderHome" });
 const _imports_0 = "data:image/svg+xml,%3csvg%20width='17'%20height='15'%20viewBox='0%200%2017%2015'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M1.05945%207.2055H15.3716M15.3716%207.2055L9.47837%201.31226M15.3716%207.2055L9.47837%2013.0987'%20stroke='%23898989'%20stroke-width='2.02054'%20stroke-linecap='round'%20stroke-linejoin='round'/%3e%3c/svg%3e";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ActionGroupButton",
@@ -661,4 +661,4 @@ _sfc_main.setup = (props, ctx) => {
 const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["ssrRender", _sfc_ssrRender], ["__scopeId", "data-v-025d76b4"]]);
 
 export { index as default };
-//# sourceMappingURL=index-rNJxEDr5.mjs.map
+//# sourceMappingURL=index-CjJX86Km.mjs.map
