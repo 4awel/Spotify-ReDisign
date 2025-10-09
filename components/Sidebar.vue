@@ -64,7 +64,7 @@
               <!-- Если dropdown пустой -->
               <div v-else class="dropdown-empty">
                 <div class="empty-icon">
-                  <img src="../assets/svg/sidebar/empty-folder.svg" alt="Empty" />
+                  <img src="" alt="Empty" />
                 </div>
                 <p class="empty-text">Здесь пока ничего нет</p>
                 <button class="empty-action" @click="handleEmptyAction(item.title)">
