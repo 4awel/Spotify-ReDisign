@@ -71,15 +71,15 @@ interface HeaderType {
   title: string;
 }
 
-interface ActionType {
-  image: string;
-}
+import { useActivityStore } from '@/stores/activity'
 
 export default defineComponent({
   setup() {
     const activeButton = ref(0);
     const searchQuery = ref('');
     const isProfileMenuOpen = ref(false);
+
+    const activityStore = useActivityStore();
 
     const btnRoute = {
       buttons: [
@@ -101,28 +101,34 @@ export default defineComponent({
     };
 
     const groupAction = [
-      {
-        image: headerAction0,
-      },
-      {
-        image: headerAction1,
-      },
-      {
-        image: headerAction2,
-      },
-      {
-        image: headerAction3,
-      },
-    ] as ActionType[];
+      { image: headerAction0 },
+      { image: headerAction1 },
+      { image: headerAction2 },
+      { image: headerAction3 },
+    ];
 
     const setActiveButton = (index: number) => {
       activeButton.value = index;
-      // Здесь можно добавить логику навигации
     };
 
     const handleAction = (index: number) => {
-      // Обработка действий (уведомления, настройки и т.д.)
-      console.log('Action clicked:', index);
+      switch (index) {
+        case 0:
+          // Действие для headerAction0
+          console.log('Action 0 clicked');
+          break;
+        case 1:
+          // Действие для headerAction1
+          console.log('Action 1 clicked');
+          break;
+        case 2:
+          activityStore.toggleFriendsActivityOpen;
+          break;
+        case 3:
+          // Действие для headerAction3
+          console.log('Action 3 clicked');
+          break;
+      }
     };
 
     const toggleProfileMenu = () => {
@@ -137,7 +143,8 @@ export default defineComponent({
       isProfileMenuOpen,
       setActiveButton,
       handleAction,
-      toggleProfileMenu
+      toggleProfileMenu,
+      activityStore
     };
   },
 });

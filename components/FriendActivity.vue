@@ -8,7 +8,7 @@
         <div class="svg-adduser svg">
           <img src="../assets/svg/FriendActivity/adduser.svg" alt="adduser" />
         </div>
-        <div class="svg-close svg">
+        <div @click="closeActivity" class="svg-close svg">
           <img src="../assets/svg/FriendActivity/close.svg" alt="close" />
         </div>
       </div>
@@ -52,6 +52,8 @@ interface FriendsType {
   currentState: string;
 }
 
+import { useActivityStore } from '@/stores/activity';
+
 interface Emit {
   (e: 'close-activity', value: boolean): void
 }
@@ -60,8 +62,10 @@ const state = "online";
 
 const emit = defineEmits<Emit>();
 
-const closeActivity = () => {
+const activityStore = useActivityStore();
 
+const closeActivity = () => {
+  activityStore.toggleFriendsActivityOpen;
 }
 
 const friends = [
