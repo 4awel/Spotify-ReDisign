@@ -797,7 +797,7 @@ const plugins = [
   components_plugin_4kY4pyzJIYX99vmMAAIorFf3CnAaptHitJgf7JxiED8
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-CuH_AWbL.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-BWMDgs_u.mjs').then((m) => m.default || m))
 };
 const LayoutLoader = defineComponent({
   name: "LayoutLoader",

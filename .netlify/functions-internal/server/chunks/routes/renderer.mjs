@@ -40,7 +40,7 @@ function createHead(options = {}) {
   return head;
 }
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[]};
+const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1.0"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[],"viewport":"width=device-width, initial-scale=1.0","charset":"utf-8"};
 
 const appRootTag = "div";
 
@@ -223,7 +223,7 @@ async function renderInlineStyles(usedModules) {
 
 const renderSSRHeadOptions = {"omitLineBreaks":true};
 
-const entryFileName = "CMrqRoj2.js";
+const entryFileName = "2gMNR5lD.js";
 
 const _DRIVE_LETTER_START_RE = /^[A-Za-z]:\//;
 function normalizeWindowsPath(input = "") {

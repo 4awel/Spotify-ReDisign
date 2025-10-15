@@ -1,10 +1,10 @@
 const client_manifest = {
-  "_DY8oETul.js": {
+  "_BULv-ewT.js": {
     "resourceType": "script",
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "DY8oETul.js",
+    "file": "BULv-ewT.js",
     "name": "menu",
     "imports": [
       "node_modules/nuxt/dist/app/entry.js"
@@ -83,21 +83,21 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "DCi3K7q0.js",
+    "file": "CGcOo8KR.js",
     "name": "default",
     "src": "layouts/default.vue",
     "isDynamicEntry": true,
     "imports": [
       "node_modules/nuxt/dist/app/entry.js",
-      "_DY8oETul.js"
+      "_BULv-ewT.js"
     ],
     "css": [],
     "assets": [
       "dj.eZ_iSA6T.svg"
     ]
   },
-  "default.IctI-p-p.css": {
-    "file": "default.IctI-p-p.css",
+  "default.Cl0AsCMR.css": {
+    "file": "default.Cl0AsCMR.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true
@@ -113,7 +113,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "CMrqRoj2.js",
+    "file": "2gMNR5lD.js",
     "name": "entry",
     "src": "node_modules/nuxt/dist/app/entry.js",
     "isEntry": true,
@@ -121,15 +121,15 @@ const client_manifest = {
       "layouts/default.vue"
     ],
     "css": [
-      "entry.DekTqCxj.css"
+      "entry.BfU-oEPd.css"
     ],
     "assets": [
       "CircularStd-Bold.DZsmxsWl.ttf",
       "CircularStd-Medium.D3hF_VwG.ttf"
     ]
   },
-  "entry.DekTqCxj.css": {
-    "file": "entry.DekTqCxj.css",
+  "entry.BfU-oEPd.css": {
+    "file": "entry.BfU-oEPd.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true
@@ -149,12 +149,12 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "CYqDgWex.js",
+    "file": "DwkDIJIb.js",
     "name": "index",
     "src": "pages/index.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_DY8oETul.js",
+      "_BULv-ewT.js",
       "node_modules/nuxt/dist/app/entry.js"
     ],
     "css": [],

@@ -150,6 +150,7 @@ export default defineComponent({
   },
   setup() {
     // Данные для первого блока
+
     const cardsPlaylistFst = [
       {
         slide: 0,
