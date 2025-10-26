@@ -73,7 +73,7 @@
           </div>
 
           <div class="duration">
-            <b>{{ track.duration }}</b>
+            <b>{{ formatDuration(track.duration) }}</b>
           </div>
         </div>
       </div>
@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useSearchStore } from "~/stores/search";
 import { useTracklistStore } from "~/stores/tracklist";
 import type { Track } from "~/types";
@@ -102,6 +102,71 @@ const isArtistPinned = ref(false);
 const isArtistLiked = ref(false);
 const isPlay = ref(false);
 
+// Функция для форматирования времени
+const formatDuration = (duration: number | string): string => {
+  try {
+    // Если duration уже в формате "mm:ss", возвращаем как есть
+    if (typeof duration === 'string' && duration.includes(':')) {
+      return duration;
+    }
+    
+    // Если duration в секундах (число)
+    let seconds: number;
+    
+    if (typeof duration === 'string') {
+      // Пробуем преобразовать строку в число
+      seconds = parseInt(duration);
+      if (isNaN(seconds)) {
+        return '0:00';
+      }
+    } else {
+      seconds = duration;
+    }
+    
+    // Форматируем в mm:ss
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  } catch (error) {
+    console.error('Error formatting duration:', error);
+    return '0:00';
+  }
+};
+
+// Альтернативная версия для обработки разных форматов
+const formatDurationAdvanced = (duration: any): string => {
+  if (!duration) return '0:00';
+  
+  // Если duration уже отформатирован
+  if (typeof duration === 'string') {
+    // Проверяем форматы: "mm:ss", "m:ss", "m:s"
+    const timeFormat = /^(\d+):(\d{1,2})$/;
+    const match = duration.match(timeFormat);
+    
+    if (match) {
+      const minutes = parseInt(match[1]);
+      const seconds = parseInt(match[2]);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Если это просто число в строке
+    const seconds = parseInt(duration);
+    if (!isNaN(seconds)) {
+      return formatDuration(seconds);
+    }
+    
+    return '0:00';
+  }
+  
+  // Если duration в секундах (число)
+  if (typeof duration === 'number') {
+    return formatDuration(duration);
+  }
+  
+  return '0:00';
+};
+
 // Инициализация состояний для треков
 const initializeTrackStates = () => {
   if (searchStore.searchResult.tracklist) {
@@ -112,6 +177,17 @@ const initializeTrackStates = () => {
       }
       if (track.isPlaying === undefined) {
         track.isPlaying = false;
+      }
+      
+      // Форматируем duration если нужно
+      if (track.duration && typeof track.duration !== 'string') {
+        // Если duration не строка, форматируем его
+        track.formattedDuration = formatDuration(track.duration);
+      } else if (track.duration) {
+        // Если duration строка, проверяем формат
+        track.formattedDuration = formatDurationAdvanced(track.duration);
+      } else {
+        track.formattedDuration = '0:00';
       }
     });
   }
@@ -139,21 +215,32 @@ const toggleLikeArtist = () => {
 // Переключение воспроизведения для конкретного трека
 const togglePlay = (index: number) => {
   const track = searchStore.searchResult.tracklist[index];
-  trackListStore.getTrackOut(searchStore.searchResult.tracklist);
-
-  // Останавливаем все другие треки
+  const playlist = searchStore.searchResult.tracklist;
+  
+  // Если нажимаем на уже играющий трек - ставим на паузу
+  if (track.isPlaying) {
+    track.isPlaying = false;
+    trackListStore.pauseTrack();
+    console.log(`Track ${track.title} paused`);
+    return;
+  }
+  
+  // Останавливаем все другие треки и сбрасываем их состояние
   searchStore.searchResult.tracklist.forEach((t: any, i: number) => {
     if (i !== index) {
       t.isPlaying = false;
     }
   });
+  
+  // Устанавливаем весь плейлист и текущий трек
+  trackListStore.setCurrentPlaylist(playlist);
+  trackListStore.setCurrentTrack(track, index);
+  trackListStore.playTrack();
 
-  // Переключаем состояние текущего трека
-  track.isPlaying = !track.isPlaying;
+  // Включаем воспроизведение текущего трека
+  track.isPlaying = true;
 
-  console.log(
-    `Track ${track.title} is now ${track.isPlaying ? "playing" : "paused"}`
-  );
+  console.log(`Track ${track.title} is now playing`);
 };
 
 // Переключение лайка для конкретного трека
@@ -165,6 +252,44 @@ const toggleLike = (index: number) => {
     `Track ${track.title} is now ${track.isLiked ? "liked" : "unliked"}`
   );
 };
+
+// Computed свойства для отслеживания состояния из Store
+const currentIndexFromStore = computed(() => trackListStore.currentIndex);
+const isPlayingFromStore = computed(() => trackListStore.isPlaying);
+const currentTrackFromStore = computed(() => trackListStore.currentTrack);
+
+// Watcher для синхронизации состояний при переключении треков извне
+watch(currentIndexFromStore, (newIndex, oldIndex) => {
+  // Сбрасываем состояние у предыдущего трека
+  if (oldIndex !== null && searchStore.searchResult.tracklist[oldIndex]) {
+    searchStore.searchResult.tracklist[oldIndex].isPlaying = false;
+  }
+  
+  // Устанавливаем состояние у нового текущего трека
+  if (newIndex !== null && searchStore.searchResult.tracklist[newIndex]) {
+    searchStore.searchResult.tracklist[newIndex].isPlaying = isPlayingFromStore.value;
+  }
+});
+
+// Watcher для синхронизации состояния воспроизведения
+watch(isPlayingFromStore, (isPlaying) => {
+  const currentIndex = currentIndexFromStore.value;
+  
+  if (currentIndex !== null && searchStore.searchResult.tracklist[currentIndex]) {
+    searchStore.searchResult.tracklist[currentIndex].isPlaying = isPlaying;
+  }
+});
+
+// Watcher для сброса всех состояний при смене трека
+watch(currentTrackFromStore, (newTrack, oldTrack) => {
+  // Если трек сменился, сбрасываем состояние у всех треков кроме текущего
+  if (newTrack && oldTrack && newTrack.id !== oldTrack.id) {
+    const currentIndex = currentIndexFromStore.value;
+    searchStore.searchResult.tracklist.forEach((track: any, index: number) => {
+      track.isPlaying = index === currentIndex && isPlayingFromStore.value;
+    });
+  }
+});
 
 // Инициализируем состояния при монтировании компонента
 onMounted(() => {
@@ -182,208 +307,5 @@ watch(
 </script>
 
 <style scoped>
-.search-container {
-  padding: 20px 40px;
-}
-
-.track {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px;
-  border-radius: 20px;
-  width: 60%;
-  gap: 15px;
-  transition: background-color 0.3s ease;
-}
-
-.track:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.tracklist {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.artist {
-  position: relative;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.artist-avatar-container {
-  position: relative;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  overflow: hidden;
-  transition: all 300ms ease;
-}
-
-.artist .avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  transition: all 300ms ease;
-}
-
-.avatar-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  opacity: 0;
-  transition: all 300ms ease;
-  border-radius: 50%;
-}
-
-.artist-avatar-container:hover .avatar-overlay {
-  opacity: 1;
-}
-
-.artist-avatar-container:hover .avatar {
-  filter: blur(2px);
-  transform: scale(1.05);
-}
-
-.overlay-btn {
-  /* background: rgba(255, 255, 255, 0.9); */
-  border: none;
-  /* border-radius: 50%; */
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); */
-}
-
-.overlay-btn:hover {
-  /* background: white; */
-  transform: scale(1.1);
-  /* box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); */
-}
-
-.overlay-btn img {
-  width: 42px;
-  height: 42px;
-}
-
-.play-btn {
-  background: #00000000;
-}
-
-.play-btn:hover {
-  background: #00000000;
-}
-
-.pin-btn,
-.like-btn {
-  background: rgba(255, 255, 255, 0);
-}
-
-.pin-btn img {
-  width: 24px;
-  height: 24px;
-}
-
-.artist b {
-  font-size: 42px;
-  color: white;
-}
-
-.play-control,
-.like-control {
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: background-color 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.play-control:hover,
-.like-control:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.play-control img {
-  width: 24px;
-  height: 24px;
-}
-
-.like-control img {
-  width: 40px;
-  height: 40px;
-}
-
-.track-preview img {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.title {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.title b {
-  color: white;
-  font-size: 16px;
-}
-
-.title a {
-  color: #b3b3b3;
-  font-size: 14px;
-  text-decoration: none;
-}
-
-.title a:hover {
-  text-decoration: underline;
-}
-
-.duration {
-  color: #b3b3b3;
-  font-size: 14px;
-  width: 20px;
-}
-
-.loading {
-  color: #1db954;
-  font-size: 18px;
-  text-align: center;
-  padding: 20px;
-}
-
-.searching {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: white;
-}
-
-.error-search-result {
-  color: #ff6b6b;
-  font-size: 18px;
-  text-align: center;
-  padding: 40px;
-}
+@import './styles/search.scss';
 </style>

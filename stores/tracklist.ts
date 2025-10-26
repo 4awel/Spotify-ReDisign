@@ -47,9 +47,9 @@ export const useTracklistStore = defineStore("tracklist", () => {
     favoriteTracks: [],
     loading: false,
     error: null,
-    currentTrack: null, 
-    currentPlaylist: [], 
-    isPlaying: false, 
+    currentTrack: null,
+    currentPlaylist: [],
+    isPlaying: false,
     currentIndex: 0,
   });
 
@@ -58,6 +58,10 @@ export const useTracklistStore = defineStore("tracklist", () => {
   const favoriteTracks = computed(() => state.favoriteTracks);
   const isLoading = computed(() => state.loading);
   const hasError = computed(() => state.error);
+  const currentTrack = computed(() => state.currentTrack);
+  const currentPlaylist = computed(() => state.currentPlaylist);
+  const currentIndex = computed(() => state.currentIndex);
+  const isPlaying = computed(() => state.isPlaying);
 
   // Action
   const getChartTracks = async () => {
@@ -79,8 +83,28 @@ export const useTracklistStore = defineStore("tracklist", () => {
     }
   };
 
-  const getTrackOut = (tracklist: Track[]) => {
-    state.chartTracks = tracklist;
+  const setCurrentTrack = (track: Track, index: number = 0) => {
+    state.currentTrack = track;
+    state.currentIndex = index;
+    state.isPlaying = true;
+  };
+
+  const setCurrentIndex = (index: number) => {
+    state.currentIndex = index
+  };
+
+  const setCurrentPlaylist = (playlist: Track[]) => {
+    state.currentPlaylist = playlist;
+    state.currentIndex = 0;
+    state.currentTrack = playlist[0] || null;
+  };
+
+  const playTrack = () => {
+    state.isPlaying = true;
+  };
+
+  const pauseTrack = () => {
+    state.isPlaying = false;
   };
 
   return {
@@ -89,8 +113,16 @@ export const useTracklistStore = defineStore("tracklist", () => {
     favoriteTracks,
     isLoading,
     hasError,
+    currentTrack,
+    currentPlaylist,
+    currentIndex,
+    isPlaying,
     // Actions
     getChartTracks,
-    getTrackOut,
+    setCurrentTrack,
+    setCurrentPlaylist,
+    playTrack,
+    pauseTrack,
+    setCurrentIndex
   };
 });

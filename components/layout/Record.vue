@@ -113,7 +113,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, computed, watch } from "vue";
 
 import { useTracklistStore } from "~/stores/tracklist";
 import type { Track } from "~/types";
@@ -177,6 +177,13 @@ export default defineComponent({
       }
     };
 
+    const currentTrackfromOut = computed(() => TrackListStore.currentTrack);
+    const isPlayingfromOut = computed(() => TrackListStore.isPlaying);
+    const currentPlaylistfromOut = computed(
+      () => TrackListStore.currentPlaylist
+    );
+    const currentIndexfromOut = computed(() => TrackListStore.currentIndex);
+
     // Пауза трека
     const pauseTrack = () => {
       if (audioPlayer.value) {
@@ -216,9 +223,10 @@ export default defineComponent({
       }
 
       const chartTracksList = shuffleTrackList.value;
-      historyTrackList.value.push(currentIndexTrack.value);
+      historyTrackList.value.push((currentIndexTrack as any).value);
       currentIndexTrack.value++;
-      currentTrack.value = chartTracksList[currentIndexTrack.value];
+      (currentTrack as any).value = chartTracksList[currentIndexTrack.value];
+
       setTimeout(() => {
         playTrack();
       }, 200);
@@ -246,11 +254,12 @@ export default defineComponent({
       const shuffleTrackArray = [...TrackListStore.chartTracks] as Track[];
       for (let i = shuffleTrackArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [shuffleTrackArray[i], shuffleTrackArray[j]] = [
+        [(shuffleTrackArray as any)[i], (shuffleTrackArray as any)[j]] = [
           shuffleTrackArray[j],
           shuffleTrackArray[i],
         ];
       }
+
       shuffleTrackList.value = shuffleTrackArray;
     };
 
@@ -261,7 +270,7 @@ export default defineComponent({
         if (chartTracksList.length === 0 || !chartTracksList) {
           return;
         }
-        currentTrack.value = chartTracksList[currentIndexTrack.value];
+        (currentTrack as any).value = chartTracksList[currentIndexTrack.value];
       } catch (err) {
         console.log("Error generate random track", err);
       }
@@ -271,28 +280,58 @@ export default defineComponent({
       pauseTrack();
       currentTime.value = 0;
       const chartTracksList = shuffleTrackList.value;
-      historyTrackList.value.push(currentIndexTrack.value);
+      historyTrackList.value.push(currentIndexTrack.value as any);
       currentIndexTrack.value++;
-      currentTrack.value = chartTracksList[currentIndexTrack.value];
+      TrackListStore.setCurrentIndex(currentIndexTrack.value);
+      if (currentIndexTrack.value === (chartTracksList.length - 1)) {
+        shuffleArray();
+      }
+      (currentTrack.value as any) = chartTracksList[currentIndexTrack.value];
       setTimeout(() => {
         playTrack();
       }, 200);
     };
 
     const prevTrack = () => {
-      pauseTrack();
-      currentTime.value = 0;
-      const chartTracksList = shuffleTrackList.value;
-      currentIndexTrack.value--;
-      currentTrack.value = chartTracksList[currentIndexTrack.value];
-      setTimeout(() => {
-        playTrack();
-      }, 200);
+      if (currentIndexTrack.value !== 0) {
+        pauseTrack();
+        currentTime.value = 0;
+        const chartTracksList = shuffleTrackList.value;
+        currentIndexTrack.value--;
+        TrackListStore.setCurrentIndex(currentIndexTrack.value);
+        (currentTrack.value as any) = chartTracksList[currentIndexTrack.value];
+        setTimeout(() => {
+          playTrack();
+        }, 200);
+      }
     };
 
     const toggleLike = () => {
       isLike.value = !isLike.value;
     };
+
+    watch(currentIndexfromOut, (newIndex) => {
+      currentIndexTrack.value = newIndex
+    })
+
+    watch(currentPlaylistfromOut, (newPlaylist) => {
+      shuffleTrackList.value = newPlaylist
+    })
+
+    watch(currentTrackfromOut, (newTrack) => {
+      (currentTrack.value as any) = newTrack;
+      setTimeout(() => {
+        playTrack();
+      }, 200);
+    });
+
+    watch(isPlayingfromOut, (playing) => {
+      if (playing && audioPlayer.value) {
+        audioPlayer.value.play();
+      } else if (!playing && audioPlayer.value) {
+        audioPlayer.value.pause();
+      }
+    });
 
     // Инициализация при монтировании компонента
     onMounted(async () => {
@@ -341,7 +380,9 @@ export default defineComponent({
       currentTrack,
       currentIndexTrack,
       historyTrackList,
-      shuffleTrackList
+      shuffleTrackList,
+      isPlayingfromOut,
+      currentPlaylistfromOut
     };
   },
 });
