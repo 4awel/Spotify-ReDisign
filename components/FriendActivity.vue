@@ -65,7 +65,7 @@ const emit = defineEmits<Emit>();
 const activityStore = useActivityStore();
 
 const closeActivity = () => {
-  activityStore.toggleFriendsActivityOpen;
+  activityStore.toggleFriendsActivityOpen();
 }
 
 const friends = [

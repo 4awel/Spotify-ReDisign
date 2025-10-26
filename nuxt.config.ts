@@ -1,11 +1,13 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ["@pinia/nuxt", "nuxt-mongoose"],
   css: ["~/assets/css/global.css"],
   ssr: true,
-  nitro: {
-    preset: "netlify",
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.PORT_SERVER ? `http://localhost:${process.env.PORT_SERVER}` : 'http://localhost:4000'
+    }
   },
+  
   app: {
     baseURL: "/",
     buildAssetsDir: "/_nuxt/",

@@ -1,42 +1,31 @@
 // types/index.ts
 export interface Track {
-  // Базовые поля
-  id: string
-  title: string
-  artist: string
-  album: string
-  duration: number // в секундах
-  
-  // URLs
-  audioUrl: string
-  coverUrl: string
-  
-  // Метаданные
-  genre: string[]
-  bpm?: number
-  year?: number
-  
-  // Источник трека
-  source: 'jamendo' | 'upload' | 'deezer' | 'spotify'
-  sourceId?: string // ID из внешнего API
-  license?: string
-  
-  // Статистика
-  plays: number
-  likes: number
-  
-  // Технические поля
-  fileSize?: number
-  bitrate?: number
-  format?: string
-  
-  // Даты
-  createdAt: Date
-  updatedAt: Date
-  
-  // Для пользовательских треков
-  userId?: string
-  isPublic: boolean
+  id: number;
+  title: string;
+  artist: string;
+  album: string;
+  duration: number;
+  coverUrl: string;
+  previewUrl: string;
+  artistId: number;
+  albumId: number;
+  isExplicit: boolean;
+  rank?: number;
+}
+
+export interface Artist {
+  id: number;
+  name: string;
+  picture: string;
+  tracklist: string;
+}
+
+export interface Album {
+  id: number;
+  title: string;
+  coverUrl: string;
+  artist: string;
+  tracklist: string;
 }
 
 // Дополнительные типы для твоего проекта
