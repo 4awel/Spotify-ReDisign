@@ -8,6 +8,7 @@ import mongoose, { model, Schema } from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
+import { log, trace } from "console";
 
 dotenv.config();
 
@@ -92,10 +93,52 @@ app.get("/deezer/api", async (req: Request, res: Response) => {
     const data = response.data;
 
     if (!response.data) {
-      throw new Error('Error fetch API data!')
+      throw new Error("Error fetch API data!");
     }
 
     const chartTracks = data.data.map((track: DeezerTrack) => ({
+      id: track.id,
+      title: track.title,
+      artist: track.artist.name,
+      album: track.album.title,
+      duration: track.duration,
+      coverUrl: track.album.cover_medium,
+      previewUrl: track.preview,
+      artistId: track.artist.id,
+      albumId: track.album.id,
+      isExplicit: track.explicit_lyrics,
+      rank: track.rank,
+    }));
+    res.status(200).send(chartTracks);
+  } catch (err) {
+    if (err instanceof Error) {
+      res.json({ message: `Error fetch to client: ${err}` });
+    } else {
+      res.json({ message: `Unkwnown error: ${err}` });
+    }
+    console.log("Error api fetch", err);
+  }
+});
+
+app.get("/deezer/search", async (req: Request, res: Response) => {
+  const { value } = req.query;
+  console.log("val", value);
+  let validationValue;
+  if (typeof value === "string") {
+    validationValue = value?.replace(/[^a-zA-Zа-яА-Я0-9\s]/g, "");
+  } else {
+    res.status(400);
+  }
+  try {
+    if (validationValue) {
+      const responseTrack = await axios(
+        `https://api.deezer.com/search?q=${validationValue}&limit=10`
+      );
+      if (!responseTrack) {
+        res.status(404).send("Not found");
+      }
+      const dataTrack = responseTrack.data;
+      const trackListData = dataTrack.data.map((track: DeezerTrack) => ({
         id: track.id,
         title: track.title,
         artist: track.artist.name,
@@ -106,42 +149,40 @@ app.get("/deezer/api", async (req: Request, res: Response) => {
         artistId: track.artist.id,
         albumId: track.album.id,
         isExplicit: track.explicit_lyrics,
-        rank: track.rank
-    }));
-    res.status(200).send(chartTracks);
-  } catch (err) {
-      if (err instanceof Error) {
-        res.json({message: `Error fetch to client: ${err}`})
-      } else {
-        res.json({message: `Unkwnown error: ${err}`})
-      }
-      console.log('Error api fetch', err);
-  }
-});
+        rank: track.rank,
+      }));
 
-app.get("/deezer/search", async (req: Request, res: Response) => {
-  const { value } = req.query;
-  console.log('val', value);
-  let validationValue;
-  if (typeof value === 'string') {
-    validationValue = value?.replace(/[^a-zA-Zа-яА-Я0-9\s]/g, '');
-  } else {
-    res.status(400);
-  }
-  try {
-    if (validationValue) {
-      const response = await axios(`https://api.deezer.com/search?q=${validationValue}&limit=10`);
-      const data = response.data;
-      console.log(data)
-      res.status(200).send(data);
+      const responseArtist = await axios(
+        `https://api.deezer.com/artist/${trackListData[0].artistId}`
+      );
+
+      if (!responseArtist) {
+        res.status(404).send("Artist not found");
+      }
+
+      const dataArtist = responseArtist.data;
+      const artistData = {
+        id: dataArtist.id,
+        name: dataArtist.name,
+        picture: dataArtist.picture,
+        tracklist: dataArtist.tracklist,
+        type: dataArtist.type,
+      } as DeezerArtist;
+
+      const finalSendData = {
+        artist: artistData,
+        tracklist: trackListData,
+      };
+
+      res.status(200).send(finalSendData);
     }
   } catch (error) {
     if (error instanceof Error) {
-      res.json({ message: `Error fetch to client: ${error}` })
+      res.json({ message: `Error fetch to client: ${error}` });
     } else {
       res.json({ message: `Unknown error: ${error}` });
     }
-    console.log('Error api fetch', error);
+    console.log("Error api fetch", error);
   }
 });
 

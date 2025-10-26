@@ -1,11 +1,16 @@
 import axios from "axios";
 import type { Album, Artist, Track } from "~/types";
 
+interface ResponseSearchType {
+    artist: Artist,
+    tracklist: Track[]
+}
+
 interface SearchState {
     searchModalValue: string,
     loading: boolean,
     error: string | null,
-    resultSearch: Track[] | Artist[] | Album[]
+    resultSearch: ResponseSearchType[]
 }
 
 export const useSearchStore = defineStore('search', () => {

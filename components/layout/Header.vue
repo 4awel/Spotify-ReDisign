@@ -93,7 +93,7 @@ export default defineComponent({
     const searchStore = useSearchStore();
 
     watch(searchQuery, (newValue) => {
-      searchStore.$state.searchModalValue = newValue
+      searchStore.search(newValue)
     })
 
     const btnRoute = {
@@ -149,7 +149,6 @@ export default defineComponent({
 
     const sendSearch = () => {
       searchStore.searchOnAPI();
-      searchQuery.value = '';
     }
 
     const toggleProfileMenu = () => {

@@ -32,6 +32,10 @@ interface TrackListState {
   favoriteTracks: Track[];
   loading: boolean;
   error: string | null;
+  currentTrack: Track | null;
+  currentPlaylist: Track[];
+  isPlaying: boolean;
+  currentIndex: number;
 }
 
 import axios from "axios";
@@ -43,6 +47,10 @@ export const useTracklistStore = defineStore("tracklist", () => {
     favoriteTracks: [],
     loading: false,
     error: null,
+    currentTrack: null, 
+    currentPlaylist: [], 
+    isPlaying: false, 
+    currentIndex: 0,
   });
 
   // Getters
@@ -71,6 +79,10 @@ export const useTracklistStore = defineStore("tracklist", () => {
     }
   };
 
+  const getTrackOut = (tracklist: Track[]) => {
+    state.chartTracks = tracklist;
+  };
+
   return {
     // Getters
     chartTracks,
@@ -79,5 +91,6 @@ export const useTracklistStore = defineStore("tracklist", () => {
     hasError,
     // Actions
     getChartTracks,
+    getTrackOut,
   };
 });
