@@ -40,18 +40,19 @@ export const useActivityStore = defineStore('activity', () => {
   })
 
   // Getters
-  const toggleFriendsActivityOpen = computed(() => {
-    state.isActivityOpen = !state.isActivityOpen;
-  });
-
+  const isActivityOpen = computed(() => state.isActivityOpen);
   // Actions
   const login = async (email: string, password: string) => {
-
+    
   }
+  
+  const toggleFriendsActivityOpen = () => {
+    state.isActivityOpen = !state.isActivityOpen;
+  };
 
   return {
     // State
-    isActivityOpen: computed(() => state.isActivityOpen),
+    isActivityOpen,
 
     // Getters
     toggleFriendsActivityOpen

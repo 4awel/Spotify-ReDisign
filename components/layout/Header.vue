@@ -27,11 +27,12 @@
             placeholder="Search" 
             class="search__input"
             v-model="searchQuery"
+            @input="goSearch"
           />
+          <button @click="sendSearch" class="search-btn">Search</button>
         </div>
       </nav>
     </div>
-    
     <div class="header__right">
       <!-- Группа действий -->
       <div class="actions">
@@ -40,6 +41,7 @@
           :key="index" 
           class="actions__button"
           @click="handleAction(index)"
+          :class="{ 'active': index == 2 && activityStore.isActivityOpen }"
         >
           <img :src="action.image" :alt="`action-${index}`" class="actions__icon" />
         </button>
@@ -54,7 +56,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, watch } from "vue";
+import { navigateTo } from "#app";
 
 // SVG NAV
 import header0 from '@/assets/svg/header/header-0.svg'
@@ -69,9 +72,16 @@ import headerAction3 from '@/assets/svg/header/header-action-3.svg'
 interface HeaderType {
   image: string;
   title: string;
+  $state?: string,
 }
 
-import { useActivityStore } from '@/stores/activity'
+interface ActionType {
+  image: string,
+  isActive: boolean
+}
+
+import { useActivityStore } from '~/stores/activity';
+import { useSearchStore } from "~/stores/search";
 
 export default defineComponent({
   setup() {
@@ -80,6 +90,11 @@ export default defineComponent({
     const isProfileMenuOpen = ref(false);
 
     const activityStore = useActivityStore();
+    const searchStore = useSearchStore();
+
+    watch(searchQuery, (newValue) => {
+      searchStore.search(newValue)
+    })
 
     const btnRoute = {
       buttons: [
@@ -105,7 +120,8 @@ export default defineComponent({
       { image: headerAction1 },
       { image: headerAction2 },
       { image: headerAction3 },
-    ];
+    ] as ActionType[];
+
 
     const setActiveButton = (index: number) => {
       activeButton.value = index;
@@ -122,7 +138,7 @@ export default defineComponent({
           console.log('Action 1 clicked');
           break;
         case 2:
-          activityStore.toggleFriendsActivityOpen;
+          activityStore.toggleFriendsActivityOpen();
           break;
         case 3:
           // Действие для headerAction3
@@ -131,9 +147,17 @@ export default defineComponent({
       }
     };
 
+    const sendSearch = () => {
+      searchStore.searchOnAPI();
+    }
+
     const toggleProfileMenu = () => {
       isProfileMenuOpen.value = !isProfileMenuOpen.value;
     };
+
+    const goSearch = () => {
+      return navigateTo('/search')
+    }
 
     return {
       btnRoute,
@@ -144,7 +168,10 @@ export default defineComponent({
       setActiveButton,
       handleAction,
       toggleProfileMenu,
-      activityStore
+      activityStore,
+      goSearch,
+      searchStore,
+      sendSearch
     };
   },
 });
@@ -152,4 +179,23 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 @import '../layout/styles/Header.scss';
+
+.active {
+  background-color: #282828;
+}
+
+.search-btn {
+  color: #B3B3B3;
+  font-size: 16px;
+  background-color: #000;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  color: #1ED760;
+  transition: all 0.3s ease;
+}
+
 </style>
