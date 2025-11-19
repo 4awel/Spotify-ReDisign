@@ -18,4 +18,7 @@ export default defineNuxtConfig({
       charset: "utf-8",
     },
   },
+  nitro: {
+    preset: "netlify",
+  },
 });
