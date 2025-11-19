@@ -1,13 +1,15 @@
 export default defineNuxtConfig({
   modules: ["@pinia/nuxt", "nuxt-mongoose"],
   css: ["~/assets/css/global.css"],
-  ssr: true,
+  ssr: false,
   runtimeConfig: {
     public: {
-      apiBase: process.env.PORT_SERVER ? `http://localhost:${process.env.PORT_SERVER}` : 'http://localhost:4000'
-    }
+      apiBase: process.env.PORT_SERVER
+        ? `http://localhost:${process.env.PORT_SERVER}`
+        : "http://localhost:4000",
+    },
   },
-  
+
   app: {
     baseURL: "/",
     buildAssetsDir: "/_nuxt/",

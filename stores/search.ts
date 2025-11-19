@@ -11,7 +11,7 @@ interface SearchState {
   loading: boolean;
   error: string | null;
   resultSearch: ResponseSearchType[];
-  resultPlayListArtist: Track[]
+  resultPlayListArtist: Track[];
 }
 
 export const useSearchStore = defineStore("search", () => {
@@ -40,16 +40,23 @@ export const useSearchStore = defineStore("search", () => {
   const searchOnAPI = async () => {
     state.loading = true;
     state.error = null;
+
     try {
-      const response = await axios("http://localhost:4000/deezer/search", {
-        params: {
+      const { data, error } = await useFetch("/api/deezer/search", {
+        query: {
           value: state.searchModalValue,
         },
       });
-      if (!response.data.message) {
-        state.resultSearch = response.data;
-      } else {
-        state.error = response.data.message;
+
+      if (error.value) {
+        state.error = error.value.message;
+        return;
+      }
+
+      if (data.value && !data.value.message) {
+        state.resultSearch = data.value;
+      } else if (data.value?.message) {
+        state.error = data.value.message;
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -92,6 +99,6 @@ export const useSearchStore = defineStore("search", () => {
     searchResult,
     searchValue,
     getPlayListArtists,
-    resultPlayListArtist
+    resultPlayListArtist,
   };
 });

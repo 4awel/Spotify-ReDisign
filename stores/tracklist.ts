@@ -67,24 +67,30 @@ export const useTracklistStore = defineStore("tracklist", () => {
   const isLiked = computed(() => state.isLiked);
 
   // Action
-  const getChartTracks = async () => {
-    state.loading = true;
-    state.error = null;
 
-    try {
-      const response = await axios(`http://localhost:4000/deezer/api`);
-      state.chartTracks = response.data;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        state.error = error.message;
-      } else {
-        state.error = "Unknown error";
-      }
-      console.log(error);
-    } finally {
-      state.loading = false;
+const getChartTracks = async () => {
+  state.loading = true;
+  state.error = null;
+
+  try {
+    const { data, error } = await useFetch('/api/deezer');
+    
+    if (error.value) {
+      throw new Error(error.value.message);
     }
-  };
+    
+    state.chartTracks = data.value;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      state.error = error.message;
+    } else {
+      state.error = "Unknown error";
+    }
+    console.log(error);
+  } finally {
+    state.loading = false;
+  }
+};
 
   const setCurrentTrack = (track: Track, index: number = 0) => {
     state.currentTrack = track;

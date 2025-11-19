@@ -33,7 +33,7 @@
         <span class="index">1</span>
         <div class="track">
           <div class="image-track">
-            <img :src="" alt="image-track" />
+            <img src="" alt="image-track" />
           </div>
           <div class="title-track">
             <b>Track Name</b>
@@ -103,15 +103,9 @@
 </template>
 
 <script lang="ts" setup>
-import useTrackList from '~/stores';
+
 import { watch } from 'vue';
 
-const trackList = useTrackList();
-
-const currentTrack = {};
-watch(trackList, (track: any) => {
-    currentTrack = track;
-})
 </script>
 
 <style scoped lang="scss">
