@@ -3,16 +3,17 @@
     <div class="header__left">
       <nav class="nav">
         <!-- Кнопки навигации -->
-        <button 
+        <nuxt-link 
           v-for="(button, index) in btnRoute.buttons" 
           :key="index" 
           class="nav__button"
-          :class="{ 'nav__button--active': activeButton === index }"
+          :class="{ 'nav__button--active': $route.path == button.link }"
           @click="setActiveButton(index)"
+          :to="button.link"
         >
           <img :src="button.image" :alt="button.title" class="nav__icon" />
           <span class="nav__text">{{ button.title }}</span>
-        </button>
+        </nuxt-link>
         
         <!-- Поиск -->
         <div class="search">
@@ -72,7 +73,7 @@ import headerAction3 from '@/assets/svg/header/header-action-3.svg'
 interface HeaderType {
   image: string;
   title: string;
-  $state?: string,
+  link?: string;
 }
 
 interface ActionType {
@@ -82,6 +83,7 @@ interface ActionType {
 
 import { useActivityStore } from '~/stores/activity';
 import { useSearchStore } from "~/stores/search";
+
 
 export default defineComponent({
   setup() {
@@ -101,16 +103,19 @@ export default defineComponent({
         {
           image: header0,
           title: "Home",
+          link: '/'
         },
         {
           image: header1,
           title: "Discover",
+          link: '/discover'
         },
       ] as HeaderType[],
       inputs: [
         {
           image: header2,
           title: "Search",
+          link: '/search'
         },
       ] as HeaderType[],
     };

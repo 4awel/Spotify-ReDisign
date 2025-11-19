@@ -36,6 +36,7 @@ interface TrackListState {
   currentPlaylist: Track[];
   isPlaying: boolean;
   currentIndex: number;
+  isLiked: boolean
 }
 
 import axios from "axios";
@@ -51,6 +52,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
     currentPlaylist: [],
     isPlaying: false,
     currentIndex: 0,
+    isLiked: false
   });
 
   // Getters
@@ -62,6 +64,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
   const currentPlaylist = computed(() => state.currentPlaylist);
   const currentIndex = computed(() => state.currentIndex);
   const isPlaying = computed(() => state.isPlaying);
+  const isLiked = computed(() => state.isLiked);
 
   // Action
   const getChartTracks = async () => {
@@ -123,6 +126,6 @@ export const useTracklistStore = defineStore("tracklist", () => {
     setCurrentPlaylist,
     playTrack,
     pauseTrack,
-    setCurrentIndex
+    setCurrentIndex,
   };
 });

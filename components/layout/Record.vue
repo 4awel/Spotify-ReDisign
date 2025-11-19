@@ -116,7 +116,7 @@
 import { defineComponent, ref, onMounted, computed, watch } from "vue";
 
 import { useTracklistStore } from "~/stores/tracklist";
-import type { Track } from "~/types";
+import { Track } from "~/types";
 
 export default defineComponent({
   setup() {
@@ -217,16 +217,15 @@ export default defineComponent({
       isPlaying.value = false;
       currentTime.value = 0;
 
+      const chartTracksList = shuffleTrackList.value;
       if (isActiveRepeat.value) {
         // Если включен повтор, воспроизводим заново
         playTrack();
+      } else {
+        historyTrackList.value.push((currentIndexTrack as any).value);
+        currentIndexTrack.value++;
       }
-
-      const chartTracksList = shuffleTrackList.value;
-      historyTrackList.value.push((currentIndexTrack as any).value);
-      currentIndexTrack.value++;
       (currentTrack as any).value = chartTracksList[currentIndexTrack.value];
-
       setTimeout(() => {
         playTrack();
       }, 200);
@@ -279,13 +278,17 @@ export default defineComponent({
     const nextTrack = () => {
       pauseTrack();
       currentTime.value = 0;
+
       const chartTracksList = shuffleTrackList.value;
-      historyTrackList.value.push(currentIndexTrack.value as any);
-      currentIndexTrack.value++;
-      TrackListStore.setCurrentIndex(currentIndexTrack.value);
-      if (currentIndexTrack.value === (chartTracksList.length - 1)) {
+      if (currentIndexTrack.value === chartTracksList.length - 1) {
         shuffleArray();
       }
+      historyTrackList.value.push(currentIndexTrack.value as any);
+      currentIndexTrack.value++;
+      if (currentIndexTrack.value === chartTracksList.length - 1) {
+        shuffleArray();
+      }
+      TrackListStore.setCurrentIndex(currentIndexTrack.value);
       (currentTrack.value as any) = chartTracksList[currentIndexTrack.value];
       setTimeout(() => {
         playTrack();
@@ -311,12 +314,12 @@ export default defineComponent({
     };
 
     watch(currentIndexfromOut, (newIndex) => {
-      currentIndexTrack.value = newIndex
-    })
+      currentIndexTrack.value = newIndex;
+    });
 
     watch(currentPlaylistfromOut, (newPlaylist) => {
-      shuffleTrackList.value = newPlaylist
-    })
+      shuffleTrackList.value = newPlaylist;
+    });
 
     watch(currentTrackfromOut, (newTrack) => {
       (currentTrack.value as any) = newTrack;
@@ -382,7 +385,7 @@ export default defineComponent({
       historyTrackList,
       shuffleTrackList,
       isPlayingfromOut,
-      currentPlaylistfromOut
+      currentPlaylistfromOut,
     };
   },
 });
