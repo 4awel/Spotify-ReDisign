@@ -1,0 +1,105 @@
+.error-container {
+    height: 100vh;
+    position: relative;
+}
+
+.main-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 100px 0;
+}
+
+h1 {
+    font-size: 100px;
+}
+
+.span-header-404 {
+    text-align: left;
+    animation: mainInfo 1000ms ease;
+    color: #1ED760;
+    font-size: 140px;
+    text-shadow: 0 0px 100px #1cf568be;
+}
+
+.span-header {
+    text-align: left;
+    font-size: 100px;
+    animation: mainInfo 1500ms ease;
+    font-weight: 600;
+}
+
+b {
+    font-size: 24px;
+    animation: mainAction 600ms ease;
+}
+
+@keyframes mainAction {
+    0% {
+        transform: translateX(1000px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@keyframes mainInfo {
+    0% {
+        transform: translateX(-1000px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@keyframes rotateSvg {
+    0%   {
+        transform: translateX(-1000px) rotate(190deg);
+    }
+    100% {
+        transform: translateX(0) rotate(0);
+    }
+}
+
+.nav_back {
+    text-decoration: none;
+    padding: 20px 60px;
+    border-radius: 10px;
+    background-color: #17ee62;
+    color: #000;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 20px;
+    transition: all 300ms ease;
+    animation: mainAction 700ms ease;
+}
+
+.nav_back:hover {
+    transition: all 300ms ease;
+    transform: translateX(30px);
+    background-color: #18aa4b;
+    color: #ffffff;
+}
+
+.background-overlay img {
+    filter: brightness(0) saturate(100%) invert(58%) sepia(96%) saturate(415%)
+    hue-rotate(90deg) brightness(95%) contrast(85%) blur(10px);
+    position: absolute;
+}
+
+.background-overlay .svg-0 {
+    bottom: 5%;
+    left: 10%;
+    width: 300px;
+    height: 300px;
+    animation: rotateSvg 1500ms ease;
+}
+
+.background-overlay .svg-1 {
+    top: 40%;
+    left: 15%;
+    width: 400px;
+    height: 400px;
+    animation: rotateSvg 1000ms ease;
+}

@@ -123,7 +123,7 @@ export default defineComponent({
       },
       {
         image: sidebar3,
-        link: "/liked-songs",
+        link: "/likes",
         title: "Liked Songs",
       },
       {

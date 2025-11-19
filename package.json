@@ -17,6 +17,7 @@
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "concurrently": "^9.2.1",
+    "consola": "^3.4.2",
     "cors": "^2.8.5",
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.3",

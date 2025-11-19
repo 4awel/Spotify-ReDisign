@@ -4,30 +4,12 @@ export default defineNuxtConfig({
   ssr: false,
   runtimeConfig: {
     public: {
-      apiBase: process.env.PORT_SERVER ? `http://localhost:${process.env.PORT_SERVER}` : 'http://localhost:4000'
-    }
+      apiBase: process.env.PORT_SERVER
+        ? `http://localhost:${process.env.PORT_SERVER}`
+        : "http://localhost:4000",
+    },
   },
-    nitro: {
-    preset: 'static'
-  },
-  vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            // Выносите большие библиотеки в отдельные чанки
-            'vendor': ['vue', 'pinia'],
-            'utils': ['axios', 'dayjs']
-          }
-        }
-      }
-    }
-  },
-  // Отложенная загрузка тяжелых компонентов
-  features: {
-    inlineStyles: false
-  },
-  
+
   app: {
     baseURL: "/",
     buildAssetsDir: "/_nuxt/",

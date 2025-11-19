@@ -10,6 +10,9 @@
         <Transition name="activity-slide">
           <FriendActivity v-if="activityStore.isActivityOpen" class="activity" />
         </Transition>
+        <Transition name="banner-slide">
+          <TrackBanner v-if="bannerTrack.isOpenBanner" class="activity"/>
+        </Transition>
       </div>
       <Record class="record" />
     </div>
@@ -21,8 +24,10 @@ import Sidebar from '~/components/layout/Sidebar.vue';
 import Header from '~/components/layout/Header.vue';
 import Record from '~/components/layout/Record.vue';
 import { useActivityStore } from '@/stores/activity';
+import { useBannerTrack } from '~/stores/bannertrack';
 
 const activityStore = useActivityStore();
+const bannerTrack = useBannerTrack();
 </script>
 
 <style lang="scss" scoped>
@@ -46,6 +51,28 @@ const activityStore = useActivityStore();
 
 .activity-slide-enter-to,
 .activity-slide-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+
+.banner-slide-enter-active,
+.banner-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.banner-slide-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.banner-slide-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.banner-slide-enter-to,
+.banner-slide-leave-from {
   opacity: 1;
   transform: translateX(0);
 }
