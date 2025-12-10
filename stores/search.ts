@@ -40,24 +40,13 @@ export const useSearchStore = defineStore("search", () => {
   const searchOnAPI = async () => {
     state.loading = true;
     state.error = null;
-
     try {
-      const { data, error } = await useFetch("/api/deezer/search", {
-        query: {
+      const response = await axios("http://localhost:4000/deezer/search", {
+        params: {
           value: state.searchModalValue,
         },
       });
-
-      if (error.value) {
-        state.error = error.value.message;
-        return;
-      }
-
-      if (data.value && !data.value.message) {
-        state.resultSearch = data.value;
-      } else if (data.value?.message) {
-        state.error = data.value.message;
-      }
+      state.resultSearch = response.data;
     } catch (error: unknown) {
       if (error instanceof Error) {
         state.error = error.message;

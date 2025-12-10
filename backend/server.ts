@@ -6,10 +6,10 @@ import express, {
 } from "express";
 import mongoose, { model, Schema } from "mongoose";
 import cors from "cors";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import axios from "axios";
-import { error, log, trace } from "console";
-import type { Artist, Track } from "~/types";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const PORT: string = process.env.PORT_SERVER || "4000";
 const PORT_CLIENT: string = process.env.PORT || "3008";
 
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/DBPspotify";
+  process.env.MONGODB_URI || "mongodb://localhost:27017/DBSpotify";
 
 mongoose
   .connect(MONGODB_URI)
@@ -33,14 +33,24 @@ app.use(
 
 app.use(express.json());
 
-const formSchema = new mongoose.Schema({
-  name: { type: String, require: true },
-  phone: { type: String, require: true },
-  email: { type: String, require: true, unique: true },
-  comment: { type: String, require: true },
-});
+const userSchema = new mongoose.Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    likedTracks: [
+      {
+        trackId: { type: Number, required: true },
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const Form = mongoose.model("Form", formSchema);
+const User = mongoose.model("User", userSchema);
 
 interface DeezerTrack {
   id: number;
@@ -86,7 +96,22 @@ interface DeezerAlbum {
   type: string;
 }
 
+interface UserType {
+  email: string;
+  username: string;
+  password: string;
+  likedTracks: [
+    {
+      trackId?: number;
+      isLiked?: boolean;
+      atliked?: Date;
+    }
+  ];
+}
+
 app.get("/deezer/api", async (req: Request, res: Response) => {
+  const { userId } = req.query;
+  console.log("Id", userId);
   try {
     const response = await axios(
       "https://api.deezer.com/search?q=MAKE FAMILY NOT FRIENDS&limit=300"
@@ -95,6 +120,18 @@ app.get("/deezer/api", async (req: Request, res: Response) => {
 
     if (!response.data) {
       throw new Error("Error fetch API data!");
+    }
+
+    let userLikedTracks: string[] = [];
+    if (!userId) {
+      return res.status(404).send("Unknown params");
+    } else {
+      const user = await User.findOne({ _id: userId });
+      if (user && user.likedTracks) {
+        userLikedTracks = user.likedTracks.map((track: any) =>
+          track.trackId.toString()
+        );
+      }
     }
 
     const chartTracks = data.data.map((track: DeezerTrack) => ({
@@ -109,13 +146,14 @@ app.get("/deezer/api", async (req: Request, res: Response) => {
       albumId: track.album.id,
       isExplicit: track.explicit_lyrics,
       rank: track.rank,
+      isLiked: userId ? userLikedTracks.includes(track.id.toString()) : false,
     }));
     res.status(200).send(chartTracks);
   } catch (err: unknown) {
     if (err instanceof Error) {
       res.json({ message: `Error fetch to client: ${err}` });
     } else {
-      res.json({ message: `Unkwnown error: ${err}` });
+      res.json({ message: `Unkwnown error /deezer/api: ${err}` });
     }
     console.log("Error api fetch", err);
   }
@@ -133,7 +171,7 @@ app.get("/deezer/search", async (req: Request, res: Response) => {
   try {
     if (validationValue) {
       const responseTrack = await axios(
-        `https://api.deezer.com/search?q=${validationValue}&limit=20`
+        `https://api.deezer.com/search?q=${validationValue}&limit=30`
       );
       if (
         !responseTrack.data ||
@@ -199,7 +237,7 @@ app.get("/deezer/search", async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return res.status(500).send(`Error fetch to client: ${error.message}`);
     } else {
-      return res.status(500).send(`Unknown error: ${error}`);
+      return res.status(500).send(`Unknown error /deezer/search: ${error}`);
     }
   }
 });
@@ -240,8 +278,192 @@ app.get("/artist/playlist", async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return res.status(500).send(`Error fetch to client: ${error.message}`);
     } else {
-      return res.status(500).send(`Unknown error: ${error}`);
+      return res.status(500).send(`Unknown error /artist/playlist: ${error}`);
     }
+  }
+});
+
+app.post("/signup", async (req: Request, res: Response) => {
+  const { username, password, email } = req.body;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    if (username && email && password) {
+      const user = new User({
+        username: username,
+        email: email,
+        password: hashedPassword,
+        likedTracks: [],
+      });
+      await user.save();
+      console.log(user);
+      res.send("User has been add!").status(201);
+    } else res.send("Undefind field create user").status(401);
+  } catch (err) {
+    res.send(err).status(400);
+  }
+});
+
+app.post("/login", async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).send("Email adres or password is null");
+    }
+
+    const user = await User.findOne({ email });
+    const hashedPassword = user?.password;
+    if (hashedPassword) {
+      const isComaprePassword = await bcrypt.compare(password, hashedPassword);
+      if (isComaprePassword) {
+        const token = jwt.sign({ id: user?._id }, process.env.JWT_SECRET!, {
+          expiresIn: "3d",
+        });
+        res.json({ token });
+      } else res.send("Invalid password").status(400);
+    } else {
+      res.send("Password is not found in data base");
+    }
+  } catch (err) {
+    res.send(err).status(500);
+  }
+});
+
+interface AuthenticatedRequest extends Request {
+  user?: jwt.JwtPayload | string;
+}
+
+function aunthticetToken(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (token && process.env.JWT_SECRET) {
+    jwt.verify(token, process.env.JWT_SECRET, (err: any, user: UserType) => {
+      if (err) {
+        res.sendStatus(403);
+      } else {
+        req.user = user;
+        console.log(user);
+      }
+      next();
+    });
+  } else res.sendStatus(401);
+}
+
+app.get(
+  "/user/data",
+  aunthticetToken,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user && typeof req.user === "string") res.status(400);
+
+      const userId = (req as any).user.id;
+      const user = await User.findById(userId);
+      if (!userId)
+        res.status(400).json({ error: "User ID not found in token" });
+      if (user) {
+        res.json({
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          likedTracks: user.likedTracks,
+        });
+      } else res.status(404).json({ error: "User not found" });
+    } catch (err) {
+      res.send(err).status(500).json({ err: "Server error /user/data" });
+    }
+  }
+);
+
+app.put("/track/liked", async (req: Request, res: Response) => {
+  const { trackId, userId } = req.query;
+  console.log(trackId, userId);
+  try {
+    if (!trackId || !userId) return res.status(400).send(`Not found`);
+    const user = await User.findOne({ _id: userId });
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    const existingLikeIndex = user.likedTracks.findIndex(
+      (track) => track.trackId.toString() === trackId.toString()
+    );
+
+    let result;
+
+    if (existingLikeIndex !== -1) {
+      // Удаляем лайк (unlike)
+      user.likedTracks.splice(existingLikeIndex, 1);
+      await user.save();
+      result = {
+        message: "Like has been removed",
+        isLiked: false,
+        likesCount: user.likedTracks.length,
+      };
+    } else {
+      // Добавляем лайк
+      const likeData = {
+        trackId,
+        isLiked: true,
+        atLiked: new Date(),
+      };
+
+      user.likedTracks.push(likeData);
+      await user.save();
+      result = {
+        message: "Like has been added",
+        isLiked: true,
+        likesCount: user.likedTracks.length,
+      };
+    }
+    res.status(200).send(result);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(500).send(`Error like update: ${error.message}`);
+    } else {
+      return res.status(500).send(`Unknown error /track/like: ${error}`);
+    }
+  }
+});
+
+app.get("/liked/tracklist", async (req: Request, res: Response) => {
+  const { id } = req.query;
+
+  if (!id || typeof id !== "string" || id.trim() === "") {
+    return res.status(400).send("User ID is required");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).send("Invalid user ID format");
+  }
+  try {
+    const tracklistUser = await User.findOne({ _id: id });
+    if (!tracklistUser) return res.status(404).send("User not found");
+    const tracklist = [];
+    for (let likedTrack of tracklistUser.likedTracks) {
+      const response: DeezerTrack = await axios(
+        `https://api.deezer.com/track/${likedTrack.trackId}`
+      );
+      const trackData = response.data;
+      const track = {
+        id: trackData.id,
+        title: trackData.title,
+        artist: trackData.artist.name,
+        album: trackData.album.title,
+        duration: trackData.duration,
+        coverUrl: trackData.album.cover_medium,
+        previewUrl: trackData.preview,
+        artistId: trackData.artist.id,
+        albumId: trackData.album.id,
+        isExplicit: trackData.explicit_lyrics,
+        rank: trackData.rank,
+      };
+      tracklist.push(track);
+    }
+    res.status(200).send(tracklist);
+  } catch (error) {
+    console.error("Error fetching liked tracklist:", error);
+    res.status(500).send("Internal server error");
   }
 });
 

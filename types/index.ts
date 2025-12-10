@@ -11,6 +11,7 @@ export interface Track {
   albumId: number;
   isExplicit: boolean;
   rank?: number;
+  isLiked: boolean
 }
 
 export interface Artist {
@@ -26,16 +27,6 @@ export interface Album {
   coverUrl: string;
   artist: string;
   tracklist: string;
-}
-
-// Дополнительные типы для твоего проекта
-export interface User {
-  id: string
-  email: string
-  username: string
-  avatarUrl?: string
-  preferences: UserPreferences
-  createdAt: Date
 }
 
 export interface UserPreferences {

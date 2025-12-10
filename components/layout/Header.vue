@@ -48,6 +48,7 @@
         </button>
         
         <!-- Аватар -->
+        <span>{{ userStore.getUsername }}</span>
         <button class="avatar" @click="toggleProfileMenu">
           <img src="https://avatars.mds.yandex.net/i?id=d5228bcdeca0d1ed3fdba49e072ff56d_l-15153803-images-thumbs&n=13" alt="User avatar" class="avatar__image" />
         </button>
@@ -83,16 +84,20 @@ interface ActionType {
 
 import { useActivityStore } from '~/stores/activity';
 import { useSearchStore } from "~/stores/search";
-
+import { useUserStore } from "~/stores/user";
+import { useAuth } from "~/ composables/useAuth";
 
 export default defineComponent({
   setup() {
+    const { logout } = useAuth();
     const activeButton = ref(0);
     const searchQuery = ref('');
     const isProfileMenuOpen = ref(false);
 
     const activityStore = useActivityStore();
     const searchStore = useSearchStore();
+    const userStore = useUserStore();
+
 
     watch(searchQuery, (newValue) => {
       searchStore.search(newValue)
@@ -147,7 +152,7 @@ export default defineComponent({
           break;
         case 3:
           // Действие для headerAction3
-          console.log('Action 3 clicked');
+          logout();
           break;
       }
     };
@@ -176,7 +181,9 @@ export default defineComponent({
       activityStore,
       goSearch,
       searchStore,
-      sendSearch
+      sendSearch,
+      userStore,
+      logout
     };
   },
 });

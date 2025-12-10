@@ -2,7 +2,7 @@
   <div class="record-container">
     <!-- Аудио элемент с ref для доступа -->
     <audio
-      v-if="currentTrack.previewUrl"
+      v-if="currentTrack?.previewUrl"
       ref="audioPlayer"
       @timeupdate="updateProgress"
       @ended="handleTrackEnd"
@@ -25,14 +25,14 @@
         <div
           class="svg-random svg"
           :class="{ active: isActiveRandom }"
-          @click="isActiveRandom = !isActiveRandom"
+          @click="randomTrack"
         >
           <img src="@/assets/svg/record/random.svg" alt="random" />
         </div>
         <div
           class="svg-repeat svg"
           :class="{ active: isActiveRepeat }"
-          @click="isActiveRepeat = !isActiveRepeat"
+          @click="randomTrack"
         >
           <img src="@/assets/svg/record/repeat.svg" alt="repeat" />
         </div>
@@ -70,21 +70,31 @@
     </div>
     <div class="current-track">
       <div class="cover-track">
-        <img :src="currentTrack.coverUrl" alt="cover" />
+        <img :src="currentTrack?.coverUrl" alt="cover" />
       </div>
       <div class="description-track">
-        <h4 class="title">{{ currentTrack.title }}</h4>
-        <span class="executor">{{ currentTrack.artist }}</span>
-        <span class="album-executors">{{ currentTrack.album }}</span>
+        <h4 class="title">{{ currentTrack?.title }}</h4>
+        <span class="executor">{{ currentTrack?.artist }}</span>
+        <span class="album-executors">{{ currentTrack?.album }}</span>
       </div>
     </div>
     <div class="record-settings">
       <div class="group-btn">
-        <div v-if="!isLike" @click="toggleLike" class="svg-like-low svg">
-          <img src="@/assets/svg/record/like-low.svg" alt="like-low" />
-        </div>
-        <div v-else @click="toggleLike" class="svg-like-full svg">
-          <img src="@/assets/svg/record/like-full.svg" alt="like-full" />
+        <div
+          v-if="currentTrack"
+          @click="toggleLike"
+          class="svg-like svg"
+          :class="{
+            'svg-like-full': currentTrack.isLiked,
+            'svg-like-low': !currentTrack.isLiked,
+          }"
+        >
+          <img
+            v-if="!currentTrack.isLiked"
+            src="@/assets/svg/record/like-low.svg"
+            alt="like-low"
+          />
+          <img v-else src="@/assets/svg/record/like-full.svg" alt="like-full" />
         </div>
         <div class="svg-addplaylist svg">
           <img src="@/assets/svg/record/addplaylist.svg" alt="addplaylist" />
@@ -116,42 +126,37 @@
 import { defineComponent, ref, onMounted, computed, watch } from "vue";
 
 import { useTracklistStore } from "~/stores/tracklist";
-import { Track } from "~/types";
+import { useUserStore } from "~/stores/user";
+import { Track } from "~/types/index";
 
 export default defineComponent({
   setup() {
-    const TrackListStore = useTracklistStore();
+    const tracklistStore = useTracklistStore();
+    const userStore = useUserStore();
 
-    // Record state
+    // Record state - используем только локальное состояние для UI
     const audioPlayer = ref<HTMLAudioElement | null>(null);
-    const isPlaying = ref(false);
-    const isLike = ref(false);
     const isActiveRepeat = ref(false);
     const isActiveRandom = ref(false);
     const currentTime = ref(0);
     const duration = ref(0);
-    const currentIndexTrack = ref(0);
-    const shuffleTrackList = ref([] as Track[]);
-    const currentTrack = ref(<Track>{
-      id: 0,
-      title: "",
-      artist: "",
-      album: "",
-      duration: 0,
-      coverUrl: "",
-      previewUrl: "",
-      artistId: 0,
-      albumId: 0,
-      isExplicit: false,
-      rank: 0,
-    });
-
-    const historyTrackList = ref([] as Track[]);
 
     // Volume state
     const isMuted = ref(false);
     const volume = ref(0.7);
     const showVolumeMenu = ref(false);
+
+    // Computed свойства - берем данные из store
+    const currentTrack = computed(() => tracklistStore.currentTrack);
+    const isPlaying = computed(() => tracklistStore.isPlaying);
+    const currentPlaylist = computed(() => tracklistStore.currentPlaylist);
+    const currentIndex = computed(() => tracklistStore.currentIndex);
+    const isLiked = computed(() => tracklistStore.isLiked);
+    const chartTracks = computed(() => tracklistStore.chartTracks);
+
+    // Локальное состояние для shuffle
+    const shuffleTrackList = ref<Track[]>([]);
+    const historyTrackList = ref<number[]>([]);
 
     const toggleVolumeMenu = () => {
       showVolumeMenu.value = !showVolumeMenu.value;
@@ -167,28 +172,21 @@ export default defineComponent({
 
     // Воспроизведение трека
     const playTrack = async () => {
-      if (audioPlayer.value) {
+      if (audioPlayer.value && currentTrack.value) {
         try {
           await audioPlayer.value.play();
-          isPlaying.value = true;
+          tracklistStore.playTrack();
         } catch (error) {
           console.error("Ошибка воспроизведения:", error);
         }
       }
     };
 
-    const currentTrackfromOut = computed(() => TrackListStore.currentTrack);
-    const isPlayingfromOut = computed(() => TrackListStore.isPlaying);
-    const currentPlaylistfromOut = computed(
-      () => TrackListStore.currentPlaylist
-    );
-    const currentIndexfromOut = computed(() => TrackListStore.currentIndex);
-
     // Пауза трека
     const pauseTrack = () => {
       if (audioPlayer.value) {
         audioPlayer.value.pause();
-        isPlaying.value = false;
+        tracklistStore.pauseTrack();
       }
     };
 
@@ -214,21 +212,14 @@ export default defineComponent({
 
     // Обработка окончания трека
     const handleTrackEnd = () => {
-      isPlaying.value = false;
       currentTime.value = 0;
 
-      const chartTracksList = shuffleTrackList.value;
       if (isActiveRepeat.value) {
         // Если включен повтор, воспроизводим заново
         playTrack();
       } else {
-        historyTrackList.value.push((currentIndexTrack as any).value);
-        currentIndexTrack.value++;
+        nextTrack();
       }
-      (currentTrack as any).value = chartTracksList[currentIndexTrack.value];
-      setTimeout(() => {
-        playTrack();
-      }, 200);
     };
 
     // Переключение звука
@@ -247,88 +238,112 @@ export default defineComponent({
       return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
 
-    // Треки в рендере
-
-    const shuffleArray = () => {
-      const shuffleTrackArray = [...TrackListStore.chartTracks] as Track[];
-      for (let i = shuffleTrackArray.length - 1; i > 0; i--) {
+    const shuffleArray = (array: Track[]): Track[] => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [(shuffleTrackArray as any)[i], (shuffleTrackArray as any)[j]] = [
-          shuffleTrackArray[j],
-          shuffleTrackArray[i],
-        ];
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-
-      shuffleTrackList.value = shuffleTrackArray;
+      return shuffled;
     };
 
-    const generateRandomTrack = () => {
-      try {
-        const chartTracksList = shuffleTrackList.value;
-
-        if (chartTracksList.length === 0 || !chartTracksList) {
-          return;
-        }
-        (currentTrack as any).value = chartTracksList[currentIndexTrack.value];
-      } catch (err) {
-        console.log("Error generate random track", err);
+    const randomTrack = () => {
+      isActiveRandom.value = !isActiveRandom.value;
+      if (isActiveRandom.value) {
+        // При shuffle перемешиваем заново
+        let nextIndex = currentIndex.value + 1;
+        shuffleTrackList.value = shuffleArray(chartTracks.value);
+        nextIndex = 0;
       }
-    };
+    }
+
 
     const nextTrack = () => {
       pauseTrack();
       currentTime.value = 0;
 
-      const chartTracksList = shuffleTrackList.value;
-      if (currentIndexTrack.value === chartTracksList.length - 1) {
-        shuffleArray();
+      let tracks;
+      if (shuffleTrackList.value.length > 0) {
+        tracks = shuffleTrackList.value;
+      } else if (currentPlaylist.value.length > 0) {
+        tracks = currentPlaylist.value;
+      } else {
+        tracks = chartTracks.value;
       }
-      historyTrackList.value.push(currentIndexTrack.value as any);
-      currentIndexTrack.value++;
-      if (currentIndexTrack.value === chartTracksList.length - 1) {
-        shuffleArray();
+
+      if (tracks.length === 0) return;
+
+      let nextIndex = currentIndex.value + 1;
+      // Если достигли конца плейлиста
+      if (nextIndex >= tracks.length) {
+        nextIndex = 0; // Начинаем сначала
       }
-      TrackListStore.setCurrentIndex(currentIndexTrack.value);
-      (currentTrack.value as any) = chartTracksList[currentIndexTrack.value];
-      setTimeout(() => {
-        playTrack();
-      }, 200);
+      historyTrackList.value.push(currentIndex.value);
+      tracklistStore.setCurrentIndex(nextIndex);
+      tracklistStore.setCurrentTrack(tracks[nextIndex], nextIndex);
     };
 
     const prevTrack = () => {
-      if (currentIndexTrack.value !== 0) {
+      if (historyTrackList.value.length > 0) {
         pauseTrack();
         currentTime.value = 0;
-        const chartTracksList = shuffleTrackList.value;
-        currentIndexTrack.value--;
-        TrackListStore.setCurrentIndex(currentIndexTrack.value);
-        (currentTrack.value as any) = chartTracksList[currentIndexTrack.value];
-        setTimeout(() => {
-          playTrack();
-        }, 200);
+
+        const prevIndex = historyTrackList.value.pop()!;
+        let tracks;
+        if (shuffleTrackList.value.length > 0) {
+          tracks = shuffleTrackList.value;
+        } else if (currentPlaylist.value.length > 0) {
+          tracks = currentPlaylist.value;
+        } else {
+          tracks = chartTracks.value;
+        }
+
+        if (tracks[prevIndex]) {
+          tracklistStore.setCurrentIndex(prevIndex);
+          tracklistStore.setCurrentTrack(tracks[prevIndex], prevIndex);
+        }
+      } else if (currentIndex.value > 0) {
+        pauseTrack();
+        currentTime.value = 0;
+
+        const prevIndex = currentIndex.value - 1;
+        let tracks;
+        if (shuffleTrackList.value.length > 0) {
+          tracks = shuffleTrackList.value;
+        } else if (currentPlaylist.value.length > 0) {
+          tracks = currentPlaylist.value;
+        } else {
+          tracks = chartTracks.value;
+        }
+        if (tracks[prevIndex]) {
+          tracklistStore.setCurrentIndex(prevIndex);
+          tracklistStore.setCurrentTrack(tracks[prevIndex], prevIndex);
+        }
       }
     };
 
     const toggleLike = () => {
-      isLike.value = !isLike.value;
+      if (currentTrack.value) {
+        tracklistStore.postLikedTrack(currentTrack.value.id);
+      }
     };
 
-    watch(currentIndexfromOut, (newIndex) => {
-      currentIndexTrack.value = newIndex;
+    // Watchers
+    watch(currentTrack, (newTrack) => {
+      if (newTrack && audioPlayer.value) {
+        // Сбрасываем время и перезагружаем аудио
+        currentTime.value = 0;
+        duration.value = 0;
+        audioPlayer.value.load();
+
+        // Автовоспроизведение при смене трека
+        setTimeout(() => {
+          playTrack();
+        }, 200);
+      }
     });
 
-    watch(currentPlaylistfromOut, (newPlaylist) => {
-      shuffleTrackList.value = newPlaylist;
-    });
-
-    watch(currentTrackfromOut, (newTrack) => {
-      (currentTrack.value as any) = newTrack;
-      setTimeout(() => {
-        playTrack();
-      }, 200);
-    });
-
-    watch(isPlayingfromOut, (playing) => {
+    watch(isPlaying, (playing) => {
       if (playing && audioPlayer.value) {
         audioPlayer.value.play();
       } else if (!playing && audioPlayer.value) {
@@ -339,19 +354,21 @@ export default defineComponent({
     // Инициализация при монтировании компонента
     onMounted(async () => {
       try {
-        await TrackListStore.getChartTracks();
-
+        setTimeout(async () => {
+          await tracklistStore.getChartTracks(userStore.getId);
+        }, 200);
         if (audioPlayer.value) {
           audioPlayer.value.addEventListener("loadedmetadata", () => {
             duration.value = audioPlayer.value?.duration || 0;
           });
-        }
 
-        if (audioPlayer.value) {
           audioPlayer.value.volume = volume.value;
         }
-        shuffleArray();
-        generateRandomTrack();
+
+        // Инициализируем shuffle плейлист если нужно
+        if (isActiveRandom.value) {
+          shuffleTrackList.value = shuffleArray(chartTracks.value);
+        }
       } catch (err) {
         console.log("Error loading track", err);
       }
@@ -360,7 +377,6 @@ export default defineComponent({
     return {
       audioPlayer,
       isPlaying,
-      isLike,
       isActiveRepeat,
       isActiveRandom,
       isMuted,
@@ -381,11 +397,10 @@ export default defineComponent({
       showVolumeMenu,
       setVolume,
       currentTrack,
-      currentIndexTrack,
+      currentIndex,
       historyTrackList,
       shuffleTrackList,
-      isPlayingfromOut,
-      currentPlaylistfromOut,
+      randomTrack
     };
   },
 });

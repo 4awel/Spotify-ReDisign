@@ -1,12 +1,12 @@
 export default defineNuxtConfig({
   modules: ["@pinia/nuxt"],
   css: ["~/assets/css/global.css"],
-  ssr: false,
+  ssr: true,
   runtimeConfig: {
     public: {
-      // apiBase: process.env.PORT_SERVER
-      //   ? `http://localhost:${process.env.PORT_SERVER}`
-      //   : "http://localhost:4000",
+      apiBase: process.env.PORT_SERVER
+        ? `http://localhost:${process.env.PORT_SERVER}`
+        : "http://localhost:4000",
     },
   },
 
@@ -17,8 +17,5 @@ export default defineNuxtConfig({
       viewport: "width=device-width, initial-scale=1.0",
       charset: "utf-8",
     },
-  },
-  nitro: {
-    preset: "netlify",
-  },
+  }
 });

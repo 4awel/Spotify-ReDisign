@@ -286,10 +286,7 @@ const togglePlay = (index: number) => {
 const toggleLike = (index: number) => {
   const track = searchStore.searchResult.tracklist[index];
   track.isLiked = !track.isLiked;
-
-  console.log(
-    `Track ${track.title} is now ${track.isLiked ? "liked" : "unliked"}`
-  );
+  trackListStore.postLikedTrack(track.id);
 };
 
 // Computed свойства для отслеживания состояния из Store

@@ -8,10 +8,13 @@
           <NuxtPage />
         </div>
         <Transition name="activity-slide">
-          <FriendActivity v-if="activityStore.isActivityOpen" class="activity" />
+          <FriendActivity
+            v-if="activityStore.isActivityOpen"
+            class="activity"
+          />
         </Transition>
         <Transition name="banner-slide">
-          <TrackBanner v-if="bannerTrack.isOpenBanner" class="activity"/>
+          <TrackBanner v-if="bannerTrack.isOpenBanner" class="activity" />
         </Transition>
       </div>
       <Record class="record" />
@@ -20,18 +23,45 @@
 </template>
 
 <script setup lang="ts">
-import Sidebar from '~/components/layout/Sidebar.vue';
-import Header from '~/components/layout/Header.vue';
-import Record from '~/components/layout/Record.vue';
-import { useActivityStore } from '@/stores/activity';
-import { useBannerTrack } from '~/stores/bannertrack';
+import Sidebar from "~/components/layout/Sidebar.vue";
+import Header from "~/components/layout/Header.vue";
+import Record from "~/components/layout/Record.vue";
+import { useActivityStore } from "@/stores/activity";
+import { useBannerTrack } from "~/stores/bannertrack";
+import { useAuth } from "~/ composables/useAuth";
+import { useUserStore } from "~/stores/user";
+import type { UserState } from "~/types/user";
+import { onMounted } from "vue";
+import { useTracklistStore } from "~/stores/tracklist";
+const { initializeAuth } = useAuth();
 
 const activityStore = useActivityStore();
 const bannerTrack = useBannerTrack();
+const userStore = useUserStore();
+const { getUserData } = useAuth();
+const TrackListStore = useTracklistStore();
+
+
+onMounted(async () => {
+  try {
+    const userData: UserState = await getUserData();
+    // Сохраняем данные в store
+    userStore.setUser({
+      id: userData.id,
+      email: userData.email,
+      username: userData.username,
+      likedTracks: userData.likedTracks || [],
+    });
+  } catch (error) {
+    throw new Error("Error initiallize")
+  } finally {
+    initializeAuth;
+  }
+});
 </script>
 
 <style lang="scss" scoped>
-@import './default.scss';
+@import "./default.scss";
 
 // Анимации для FriendActivity
 .activity-slide-enter-active,
@@ -54,7 +84,6 @@ const bannerTrack = useBannerTrack();
   opacity: 1;
   transform: translateX(0);
 }
-
 
 .banner-slide-enter-active,
 .banner-slide-leave-active {

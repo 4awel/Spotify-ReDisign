@@ -10,6 +10,7 @@ interface Track {
   albumId: number;
   isExplicit: boolean;
   rank?: number;
+  isLiked: boolean;
 }
 
 interface Artist {
@@ -36,10 +37,12 @@ interface TrackListState {
   currentPlaylist: Track[];
   isPlaying: boolean;
   currentIndex: number;
-  isLiked: boolean
+  isLiked: boolean;
 }
 
 import axios from "axios";
+import { useUserStore } from "~/stores/user";
+const userStore = useUserStore();
 
 export const useTracklistStore = defineStore("tracklist", () => {
   // State
@@ -52,7 +55,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
     currentPlaylist: [],
     isPlaying: false,
     currentIndex: 0,
-    isLiked: false
+    isLiked: false,
   });
 
   // Getters
@@ -66,40 +69,71 @@ export const useTracklistStore = defineStore("tracklist", () => {
   const isPlaying = computed(() => state.isPlaying);
   const isLiked = computed(() => state.isLiked);
 
-  // Action
-
-const getChartTracks = async () => {
-  state.loading = true;
-  state.error = null;
-
-  try {
-    const { data, error } = await useFetch('/api/deezer');
-    
-    if (error.value) {
-      throw new Error(error.value.message);
+  // Actions
+  const getChartTracks = async (id: string) => {
+    state.loading = true;
+    state.error = null;
+    try {
+      console.log(id);
+      const response = await axios(`http://localhost:4000/deezer/api`, {
+        params: { userId: id },
+      });
+      console.log(response.data);
+      state.chartTracks = response.data;
+      state.currentTrack = response.data[state.currentIndex];
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        state.error = error.message;
+      } else {
+        state.error = "Unknown error";
+      }
+      console.log(error);
+    } finally {
+      state.loading = false;
     }
-    
-    state.chartTracks = data.value;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      state.error = error.message;
-    } else {
-      state.error = "Unknown error";
+  };
+
+  const postLikedTrack = async (trackId: number) => {
+    state.error = null;
+
+    // Используем useUserStore внутри функции, а не на верхнем уровне
+    const userStore = useUserStore();
+    const userId: string = userStore.getId;
+
+    try {
+      if (!trackId) return (state.error = "Track ID Undefined");
+      const response = await axios.put(
+        "http://localhost:4000/track/liked",
+        null,
+        {
+          params: {
+            trackId,
+            userId,
+          },
+        }
+      );
+      console.log(response.data.isLiked);
+      if (state.currentTrack)
+        state.currentTrack.isLiked = response.data.isLiked;
+        await getChartTracks(userStore.getId);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        state.error = error.message;
+      } else {
+        state.error = "Unknown error";
+      }
+      console.log(error);
     }
-    console.log(error);
-  } finally {
-    state.loading = false;
-  }
-};
+  };
 
   const setCurrentTrack = (track: Track, index: number = 0) => {
-    state.currentTrack = track;
+    state.currentTrack = { ...track };
     state.currentIndex = index;
     state.isPlaying = true;
   };
 
   const setCurrentIndex = (index: number) => {
-    state.currentIndex = index
+    state.currentIndex = index;
   };
 
   const setCurrentPlaylist = (playlist: Track[]) => {
@@ -126,6 +160,7 @@ const getChartTracks = async () => {
     currentPlaylist,
     currentIndex,
     isPlaying,
+    isLiked,
     // Actions
     getChartTracks,
     setCurrentTrack,
@@ -133,5 +168,6 @@ const getChartTracks = async () => {
     playTrack,
     pauseTrack,
     setCurrentIndex,
+    postLikedTrack,
   };
 });
