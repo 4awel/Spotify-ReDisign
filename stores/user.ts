@@ -10,6 +10,8 @@ export const useUserStore = defineStore("user", () => {
     isLoading: false
   });
 
+  console.log('123')
+
   // Getters
   const getEmail = computed(() => state.email);
   const getUsername = computed(() => state.username);
