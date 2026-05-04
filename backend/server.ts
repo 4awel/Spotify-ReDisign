@@ -427,8 +427,8 @@ app.put("/track/liked", async (req: Request, res: Response) => {
 });
 
 app.get("/liked/tracklist", async (req: Request, res: Response) => {
-  const { id } = req.query;
-
+  const { id, limit, ofset } = req.query;
+  console.log("Id = ", id, limit, )
   if (!id || typeof id !== "string" || id.trim() === "") {
     return res.status(400).send("User ID is required");
   }
@@ -436,30 +436,54 @@ app.get("/liked/tracklist", async (req: Request, res: Response) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).send("Invalid user ID format");
   }
+
   try {
     const tracklistUser = await User.findOne({ _id: id });
     if (!tracklistUser) return res.status(404).send("User not found");
-    const tracklist = [];
-    for (let likedTrack of tracklistUser.likedTracks) {
-      const response: DeezerTrack = await axios(
-        `https://api.deezer.com/track/${likedTrack.trackId}`
-      );
-      const trackData = response.data;
-      const track = {
-        id: trackData.id,
-        title: trackData.title,
-        artist: trackData.artist.name,
-        album: trackData.album.title,
-        duration: trackData.duration,
-        coverUrl: trackData.album.cover_medium,
-        previewUrl: trackData.preview,
-        artistId: trackData.artist.id,
-        albumId: trackData.album.id,
-        isExplicit: trackData.explicit_lyrics,
-        rank: trackData.rank,
-      };
-      tracklist.push(track);
+
+    const limitNum = limit ? parseInt(limit as string, 10) : 20;
+    if (isNaN(limitNum) || limitNum <= 0) {
+      return res.status(400).send("Invalid limit");
     }
+
+    const offsetNum = ofset ? parseInt(ofset as string, 10) : 0;
+    if (isNaN(offsetNum) || offsetNum < 0) {
+      return res.status(400).send("Invalid offset");
+    }
+
+    const startIndex = offsetNum * limitNum;
+    const endIndex = Math.min(startIndex + limitNum, tracklistUser.likedTracks.length);
+
+    const tracklist = [];
+    for (let i = startIndex; i < endIndex; i++) {
+      const likedTrack = tracklistUser.likedTracks[i];
+      if (!likedTrack) continue;
+
+      try {
+        const response = await axios.get(`https://api.deezer.com/track/${likedTrack.trackId}`);
+        const trackData = response.data;
+        const track = {
+          id: trackData.id,
+          title: trackData.title,
+          artist: trackData.artist.name,
+          album: trackData.album.title,
+          duration: trackData.duration,
+          coverUrl: trackData.album.cover_medium,
+          previewUrl: trackData.preview,
+          artistId: trackData.artist.id,
+          albumId: trackData.album.id,
+          isExplicit: trackData.explicit_lyrics,
+          rank: trackData.rank,
+        };
+        tracklist.push(track);
+      } catch (trackError) {
+        console.error(`Error fetching track ${likedTrack.trackId}:`, trackError);
+        // Skip this track
+      }
+    }
+    // for (let likedTrack of tracklistUser.likedTracks) {
+
+    // }
     res.status(200).send(tracklist);
   } catch (error) {
     console.error("Error fetching liked tracklist:", error);

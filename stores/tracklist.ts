@@ -1,32 +1,4 @@
-interface Track {
-  id: number;
-  title: string;
-  artist: string;
-  album: string;
-  duration: number;
-  coverUrl: string;
-  previewUrl: string;
-  artistId: number;
-  albumId: number;
-  isExplicit: boolean;
-  rank?: number;
-  isLiked: boolean;
-}
-
-interface Artist {
-  id: number;
-  name: string;
-  picture: string;
-  tracklist: string;
-}
-
-interface Album {
-  id: number;
-  title: string;
-  coverUrl: string;
-  artist: string;
-  tracklist: string;
-}
+import type { Track, Artist, Album } from "~/types";
 
 interface TrackListState {
   chartTracks: Track[];
@@ -38,11 +10,12 @@ interface TrackListState {
   isPlaying: boolean;
   currentIndex: number;
   isLiked: boolean;
+  isLoading: boolean;
+  currentOfset: number;
 }
 
 import axios from "axios";
 import { useUserStore } from "~/stores/user";
-const userStore = useUserStore();
 
 export const useTracklistStore = defineStore("tracklist", () => {
   // State
@@ -56,6 +29,8 @@ export const useTracklistStore = defineStore("tracklist", () => {
     isPlaying: false,
     currentIndex: 0,
     isLiked: false,
+    isLoading: false,
+    currentOfset: 0,
   });
 
   // Getters
@@ -68,6 +43,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
   const currentIndex = computed(() => state.currentIndex);
   const isPlaying = computed(() => state.isPlaying);
   const isLiked = computed(() => state.isLiked);
+  const currentOfset = computed(() => state.currentOfset);
 
   // Actions
   const getChartTracks = async (id: string) => {
@@ -93,10 +69,37 @@ export const useTracklistStore = defineStore("tracklist", () => {
     }
   };
 
+  const getLikedPlayList = async () => {
+    state.isLoading = true;
+    const userStore = useUserStore();
+    const userId: string = userStore.getId;
+    console.log("Action!")
+    try {
+      const response = await axios("http://localhost:4000/liked/tracklist", {
+        params: {
+          id: userId,
+          limit: 20,
+          ofset: state.currentOfset,
+        },
+      });
+
+      state.favoriteTracks = [...state.favoriteTracks, ...response.data];
+      state.currentOfset++;
+      console.log(state.favoriteTracks);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        state.error = error.message;
+      } else {
+        state.error = "Unknown error";
+      }
+      console.log(error);
+    } finally {
+      state.isLoading = false;
+    }
+  };
+
   const postLikedTrack = async (trackId: number) => {
     state.error = null;
-
-    // Используем useUserStore внутри функции, а не на верхнем уровне
     const userStore = useUserStore();
     const userId: string = userStore.getId;
 
@@ -115,7 +118,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
       console.log(response.data.isLiked);
       if (state.currentTrack)
         state.currentTrack.isLiked = response.data.isLiked;
-        await getChartTracks(userStore.getId);
+      await getChartTracks(userStore.getId);
     } catch (error: unknown) {
       if (error instanceof Error) {
         state.error = error.message;
@@ -150,6 +153,11 @@ export const useTracklistStore = defineStore("tracklist", () => {
     state.isPlaying = false;
   };
 
+  const clearFavoriteTracks = () => {
+    state.favoriteTracks = [];
+    state.currentOfset = 0;
+  };
+
   return {
     // Getters
     chartTracks,
@@ -161,13 +169,16 @@ export const useTracklistStore = defineStore("tracklist", () => {
     currentIndex,
     isPlaying,
     isLiked,
+    currentOfset,
     // Actions
     getChartTracks,
+    getLikedPlayList,
     setCurrentTrack,
     setCurrentPlaylist,
     playTrack,
     pauseTrack,
     setCurrentIndex,
     postLikedTrack,
+    clearFavoriteTracks,
   };
 });

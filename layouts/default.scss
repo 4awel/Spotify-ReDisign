@@ -1,7 +1,6 @@
 .container {
   display: flex;
   min-height: 100vh;
-  background: #000000;
 }
 
 .sidebar {
@@ -52,11 +51,10 @@
 
 .record {
   position: fixed;
-  bottom: 0;
+  bottom: 4px;
   right: 0;
   width: calc(100% - 356px);
   z-index: 95;
-  background: #181818;
   border-radius: 20px;
   margin: 0 20px;
 }

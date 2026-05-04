@@ -7,7 +7,11 @@ export const useUserStore = defineStore("user", () => {
     username: "",
     error: null,
     likedTracks: [],
-    isLoading: false
+    isLoading: false,
+    isAlertUved: false,
+    settings: {
+      theme: 'dark'
+    }
   });
 
   // Getters
@@ -17,7 +21,8 @@ export const useUserStore = defineStore("user", () => {
   const getLikedTracks = computed(() => state.likedTracks);
   const getId = computed(() => state.id);
   const isAuthenticated = computed(() => !!state.id);
-  const isLoading = computed(() => state.isLoading);
+  const isAlertUved = computed(() => state.isAlertUved);
+  const getSettings = computed(() => state.settings)
 
   // Actions
   const setUser = (userData: Partial<UserState>) => {
@@ -27,27 +32,8 @@ export const useUserStore = defineStore("user", () => {
     state.error = null;
   };
 
-  const getLikedPlayList = async () => {
-    state.isLoading = true;
-    state.error = null;
-    try {
-      const response = await axios('http://localhost:4000/liked/tracklist', {
-        params: {
-          id: state.id
-        }
-      });
-      state.likedTracks = response.data;
-      console.log(state.likedTracks)
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        state.error = error.message;
-      } else {
-        state.error = "Unknown error";
-      }
-      console.log(error);
-    } finally {
-      state.isLoading = false;
-    }
+  const toggleUvedOpen = () => {
+    state.isAlertUved = !state.isAlertUved
   }
 
   const clearUser = () => {
@@ -81,13 +67,14 @@ export const useUserStore = defineStore("user", () => {
     getLikedTracks,
     getId,
     isAuthenticated,
-    
+    isAlertUved,
+    getSettings,
     // Actions
     setUser,
     clearUser,
     setError,
     addLikedTrack,
     removeLikedTrack,
-    getLikedPlayList,
+    toggleUvedOpen,
   };
 });
