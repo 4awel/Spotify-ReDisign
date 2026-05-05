@@ -14,8 +14,6 @@ interface SearchState {
   resultPlayListArtist: Track[];
 }
 
-console.log('123asdcasfcasc')
-
 export const useSearchStore = defineStore("search", () => {
   // State
   const state = reactive<SearchState>({
