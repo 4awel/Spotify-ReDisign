@@ -29,7 +29,9 @@
     "pinia": "^3.0.3",
     "scss": "^0.2.4",
     "vue": "^3.5.22",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vue3-infinite-scroll": "^0.0.1-security",
+    "vue3-virtual-scroller": "^0.2.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

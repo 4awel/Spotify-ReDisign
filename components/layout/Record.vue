@@ -1,5 +1,5 @@
 <template>
-  <div class="record-container">
+  <div class="record-container" :class="settings.theme">
     <!-- Аудио элемент с ref для доступа -->
     <audio
       v-if="currentTrack?.previewUrl"
@@ -134,6 +134,8 @@ export default defineComponent({
     const tracklistStore = useTracklistStore();
     const userStore = useUserStore();
 
+    const settings = userStore.getSettings
+
     // Record state - используем только локальное состояние для UI
     const audioPlayer = ref<HTMLAudioElement | null>(null);
     const isActiveRepeat = ref(false);
@@ -143,7 +145,7 @@ export default defineComponent({
 
     // Volume state
     const isMuted = ref(false);
-    const volume = ref(0.7);
+    const volume = ref(0.2);
     const showVolumeMenu = ref(false);
 
     // Computed свойства - берем данные из store
@@ -400,7 +402,8 @@ export default defineComponent({
       currentIndex,
       historyTrackList,
       shuffleTrackList,
-      randomTrack
+      randomTrack,
+      settings
     };
   },
 });
@@ -440,6 +443,16 @@ export default defineComponent({
   accent-color: #1ed760;
   outline: none;
   cursor: pointer;
+}
+
+.dark {
+  background: #181818 !important;
+  color: #fff;
+}
+
+.light {
+  background: #ededed !important;
+  color: #000;
 }
 
 // Скрываем стандартный аудио элемент

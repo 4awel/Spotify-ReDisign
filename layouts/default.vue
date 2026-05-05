@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div :class="settings.theme" class="container">
     <Sidebar class="sidebar" />
     <div class="main-content">
       <Header class="header" />
@@ -30,7 +30,7 @@ import { useActivityStore } from "@/stores/activity";
 import { useBannerTrack } from "~/stores/bannertrack";
 import { useAuth } from "~/ composables/useAuth";
 import { useUserStore } from "~/stores/user";
-import type { UserState } from "~/types/user";
+import type { SettingsUser, UserState } from "~/types/user";
 import { onMounted } from "vue";
 import { useTracklistStore } from "~/stores/tracklist";
 const { initializeAuth } = useAuth();
@@ -41,6 +41,7 @@ const userStore = useUserStore();
 const { getUserData } = useAuth();
 const TrackListStore = useTracklistStore();
 
+const settings: SettingsUser = userStore.getSettings 
 
 onMounted(async () => {
   try {
@@ -112,6 +113,16 @@ onMounted(async () => {
   display: flex;
   flex: 1;
   overflow: hidden;
+}
+
+.dark {
+  background: #000;
+  color: #fff;
+}
+
+.light {
+  background: #fff;
+  color: #000;
 }
 
 .content-wrapper {

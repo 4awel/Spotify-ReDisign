@@ -33,49 +33,90 @@
       </div>
     </div>
     <hr />
-    <div class="like-tracklist">
-      <div v-for="(item, index) in userStore.getLikedTracks" :key="index" class="item">
+    <RecycleScroller 
+      class="like-tracklist"
+      @scroll-end="handleScrollEnd"
+      :items="likedTracks"
+      :item-size="68"
+      key-field="id"
+      v-slot="{ item, index }"
+    >
+      <div class="item">
         <span class="index">{{ index + 1 }}</span>
         <div class="track">
           <div class="image-track">
-            <img :src="item.coverUrl" alt="image-track" />
+            <img :src="item.coverUrl" :alt="item.title" />
           </div>
           <div class="title-track">
             <b>{{ item.title }}</b>
-            <nuxt-link>{{ item.artist }}</nuxt-link>
+            <nuxt-link :to="`/artist/${item.artistId}`">{{ item.artist }}</nuxt-link>
           </div>
         </div>
         <div class="album">
-          <nuxt-link>{{ item.album }}</nuxt-link>
+          <nuxt-link :to="`/album/${item.albumId}`">{{ item.album }}</nuxt-link>
         </div>
         <div class="duration">
-          <span>{{ item.duration }}</span>
+          <!-- <span>{{ formatDuration(item.duration) }}</span> -->
         </div>
         <div class="current-state-like">
-          <div class="svg-like">
+          <div class="svg-like" @click="trackListStore.postLikedTrack(item.id)">
             <img src="../assets/svg/record/like-full.svg" alt="svg-like" />
           </div>
         </div>
       </div>
-      <div v-if="userStore.getLikedPlayList.length === 0" class="null-tracklist-container">
-        <h4>Тут пока ничего нет</h4>
-      </div>
+    </RecycleScroller>
+    
+    <!-- Состояние загрузки -->
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Состояние "нет данных" -->
+    <div v-else-if="trackListStore.favoriteTracks.length === 0" class="null-tracklist-container">
+      <h4>Тут пока ничего нет</h4>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
-import { useUserStore } from "~/stores/user";
+import { ref, computed, onMounted, watch } from "vue";
+import { useTracklistStore } from "~/stores/tracklist";
+import { useUserStore } from "#imports";
 import type { Track } from "~/types";
+import { RecycleScroller } from 'vue3-virtual-scroller'
 
-// Состояние поиска
+const trackListStore = useTracklistStore();
+const userStore = useUserStore();
+
 const isSearchActive = ref(false);
 const searchQuery = ref("");
-const userStore = useUserStore();
+
+const tracks = ref([] as Track[]);
+
+const currenOfset = computed(() => trackListStore.currentOfset);
+const likedTracks = computed(() => trackListStore.favoriteTracks || []);
 const isLoading = ref(false);
-// Моковые данные для демонстрации
-const tracks = ref([]);
+const error = ref("");
+
+const loadingData = async () => {
+  isLoading.value = true;
+  error.value = "";
+  try {
+    if (trackListStore.currentOfset === 0) {
+      trackListStore.clearFavoriteTracks();
+    }
+
+    await trackListStore.getLikedPlayList();
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "Unknown error!";
+    }
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 // Функции для управления поиском
 const toggleSearch = () => {
@@ -98,25 +139,28 @@ const filteredTracks = computed(() => {
   }
 
   const query = searchQuery.value.toLowerCase();
-  return userStore.getLikedTracksfilter(
-    (track: Track) =>
-      track.title.toLowerCase().includes(query) ||
-      track.artist.toLowerCase().includes(query) ||
-      track.album.toLowerCase().includes(query)
-  );
+  // return trackListStore.getLikedTracksfilter(
+  //   (track: Track) =>
+  //     track.title.toLowerCase().includes(query) ||
+  //     track.artist.toLowerCase().includes(query) ||
+  //     track.album.toLowerCase().includes(query)
+  // );
 });
 
-onMounted(async () => {
-  isLoading.value = true;
+
+const handleScrollEnd = async () => {
   try {
-    await userStore.getLikedPlayList();
-  } catch (error) {
-    console.log(error)
-    throw new Error("Error, fetch error")
-  } finally {
-    isLoading.value = false;
+    await trackListStore.getLikedPlayList()
+  } catch (err) {
+    throw new Error("Error scroll end!");
+  }
+}
+onMounted(async () => {
+  if (userStore.getId && likedTracks.value.length === 0) {
+    await loadingData();
   }
 })
+
 
 </script>
 
@@ -134,6 +178,7 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   width: 100%;
+  height: 100vh;
 }
 
 .like-tracklist {
