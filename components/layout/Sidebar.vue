@@ -207,7 +207,6 @@ export default defineComponent({
 
     const handleEmptyAction = (title: string) => {
       console.log(`Add action for: ${title}`);
-      // Здесь можно добавить логику для добавления элементов
     };
 
     return {
@@ -225,13 +224,43 @@ export default defineComponent({
 <style lang="scss" scoped>
 @import "../layout/styles/Sidebar.scss";
 
-.dark {
-  background: #000;
-  color: #fff;
+// Используем CSS переменные
+.sidebar-container.dark {
+  background: var(--bg-primary, #000);
+  color: var(--text-primary, #fff);
 }
 
-.light {
-  background: #fff;
-  color: #000;
+.sidebar-container.light {
+  background: var(--bg-primary, #fff);
+  color: var(--text-primary, #000);
+}
+
+// Для элементов внутри сайдбара
+.sidebar-container.dark .sidebar-link,
+.sidebar-container.dark .dropdown-trigger,
+.sidebar-container.dark .dropdown-item-text {
+  color: var(--text-primary, #fff);
+}
+
+.sidebar-container.light .sidebar-link,
+.sidebar-container.light .dropdown-trigger,
+.sidebar-container.light .dropdown-item-text {
+  color: var(--text-primary, #000);
+}
+
+.sidebar-container.dark .dropdown-menu {
+  background: var(--bg-secondary, #0a0a0a);
+}
+
+.sidebar-container.light .dropdown-menu {
+  background: var(--bg-secondary, #f5f5f5);
+}
+
+.sidebar-container.dark .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-container.light .dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.05);
 }
 </style>
