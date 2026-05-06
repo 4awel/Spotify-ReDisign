@@ -59,7 +59,7 @@
         </button>
 
         <!-- Аватар -->
-        <span>{{ userStore.getUsername }}</span>
+        <span class="username">{{ userStore.getUsername }}</span>
         <button class="avatar" @click="toggleProfileMenu">
           <img
             src="https://avatars.mds.yandex.net/i?id=d5228bcdeca0d1ed3fdba49e072ff56d_l-15153803-images-thumbs&n=13"
@@ -157,11 +157,9 @@ export default defineComponent({
     const handleAction = (index: number) => {
       switch (index) {
         case 0:
-          // Действие для headerAction0
           console.log("Action 0 clicked");
           break;
         case 1:
-          // Действие для headerAction1
           console.log("Action 1 clicked");
           break;
         case 2:
@@ -213,25 +211,59 @@ export default defineComponent({
   background-color: #282828;
 }
 
-.dark {
-  color: #fff;
-  background: #181818;
+// Используем CSS переменные вместо жестких цветов
+.header.dark {
+  color: var(--text-primary, #fff);
+  background: var(--bg-secondary, #181818);
 }
 
-.light {
-  color: #000;
-  background: #fff;
+.header.light {
+  color: var(--text-primary, #000);
+  background: var(--bg-secondary, #fff);
 }
 
-.search-btn {
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.search.dark {
+  background: var(--bg-primary, #000);
+}
+
+.search.light {
+  background: var(--bg-primary, #fff);
+}
+
+.search__input.dark {
+  color: var(--text-primary, #fff);
+  background: var(--bg-primary, #000);
+
+  &::placeholder {
+    color: var(--text-secondary, #b3b3b3);
+  }
+}
+
+.search__input.light {
+  color: var(--text-primary, #000);
+  background: var(--bg-primary, #fff);
+
+  &::placeholder {
+    color: var(--text-secondary, #666);
+  }
+}
+
+.search-btn.dark {
+  color: var(--text-primary, #fff);
+  background: transparent;
+}
+
+.search-btn.light {
+  color: var(--text-primary, #000);
+  background: transparent;
 }
 
 .search-btn:hover {
   color: #1ed760;
   transition: all 0.3s ease;
+}
+
+.username {
+  color: var(--text-primary, #fff);
 }
 </style>

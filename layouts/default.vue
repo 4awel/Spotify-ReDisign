@@ -1,5 +1,5 @@
 <template>
-  <div :class="settings.theme" class="container">
+  <div :class="[settings.theme, 'container']">
     <Sidebar class="sidebar" />
     <div class="main-content">
       <Header class="header" />
@@ -41,12 +41,11 @@ const userStore = useUserStore();
 const { getUserData } = useAuth();
 const TrackListStore = useTracklistStore();
 
-const settings: SettingsUser = userStore.getSettings 
+const settings: SettingsUser = userStore.getSettings;
 
 onMounted(async () => {
   try {
     const userData: UserState = await getUserData();
-    // Сохраняем данные в store
     userStore.setUser({
       id: userData.id,
       email: userData.email,
@@ -54,15 +53,112 @@ onMounted(async () => {
       likedTracks: userData.likedTracks || [],
     });
   } catch (error) {
-    throw new Error("Error initiallize")
+    console.error("Error initializing", error);
   } finally {
-    initializeAuth;
+    initializeAuth();
   }
 });
 </script>
 
+<style lang="scss">
+// Глобальные стили (без scoped)
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #000000;
+  overflow-x: hidden;
+}
+
+#__nuxt {
+  min-height: 100vh;
+}
+
+// Темы
+.dark {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --border-color: #181818;
+}
+
+.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+}
+</style>
+
 <style lang="scss" scoped>
 @import "./default.scss";
+
+.container {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+.main-content {
+  margin-left: 320px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  width: calc(100% - 320px);
+  background: var(--bg-primary);
+}
+
+.header {
+  padding: 38px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: var(--bg-primary); // Используем CSS переменную
+}
+
+.pages-route {
+  display: flex;
+  gap: 8px;
+  padding: 0;
+  position: relative;
+  margin-bottom: 100px;
+  margin-right: 24px;
+  margin-left: 20px;
+}
+
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 175px);
+  scrollbar-color: #1ed760 var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--bg-primary);
+}
+
+.record {
+  position: fixed;
+  bottom: 4px;
+  right: 0;
+  width: calc(100% - 356px);
+  z-index: 95;
+  border-radius: 20px;
+  margin: 0 20px;
+}
 
 // Анимации для FriendActivity
 .activity-slide-enter-active,
@@ -107,22 +203,11 @@ onMounted(async () => {
   transform: translateX(0);
 }
 
-// Стили для контейнеров
 .pages-route {
   position: relative;
   display: flex;
   flex: 1;
   overflow: hidden;
-}
-
-.dark {
-  background: #000;
-  color: #fff;
-}
-
-.light {
-  background: #fff;
-  color: #000;
 }
 
 .content-wrapper {
@@ -137,13 +222,55 @@ onMounted(async () => {
   bottom: 0;
   width: 600px;
   z-index: 10;
-  background-color: #000000;
+  background: var(--bg-primary);
 }
 
-// Когда активность открыта, немного сдвигаем основной контент
-.activity-slide-enter-active ~ .content-wrapper,
-.activity-slide-leave-active ~ .content-wrapper {
-  margin-right: 300px;
-  transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+// Адаптивность
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 280px;
+  }
+
+  .main-content {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+  }
+
+  .record {
+    left: 280px;
+    width: calc(100% - 280px);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 110;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .record {
+    left: 0;
+    width: 100%;
+  }
+
+  .pages-route {
+    padding-bottom: 80px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pages-route {
+    padding-bottom: 70px;
+  }
 }
 </style>
