@@ -117,6 +117,7 @@ const loadingData = async () => {
     isLoading.value = false;
   }
 }
+console.log(123)
 
 // Функции для управления поиском
 const toggleSearch = () => {
