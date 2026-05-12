@@ -1,5 +1,6 @@
 import type { UserState, LikedTrack } from "~/types/user";
 import axios from "axios";
+
 export const useUserStore = defineStore("user", () => {
   const state = reactive<UserState>({
     id: "",
@@ -10,8 +11,8 @@ export const useUserStore = defineStore("user", () => {
     isLoading: false,
     isAlertUved: false,
     settings: {
-      theme: 'dark'
-    }
+      theme: "dark",
+    },
   });
 
   // Getters
@@ -22,7 +23,7 @@ export const useUserStore = defineStore("user", () => {
   const getId = computed(() => state.id);
   const isAuthenticated = computed(() => !!state.id);
   const isAlertUved = computed(() => state.isAlertUved);
-  const getSettings = computed(() => state.settings)
+  const getSettings = computed(() => state.settings);
 
   // Actions
   const setUser = (userData: Partial<UserState>) => {
@@ -33,8 +34,8 @@ export const useUserStore = defineStore("user", () => {
   };
 
   const toggleUvedOpen = () => {
-    state.isAlertUved = !state.isAlertUved
-  }
+    state.isAlertUved = !state.isAlertUved;
+  };
 
   const clearUser = () => {
     state.id = "";
@@ -53,13 +54,66 @@ export const useUserStore = defineStore("user", () => {
   };
 
   const removeLikedTrack = (trackId: string) => {
-    state.likedTracks = state.likedTracks.filter(track => track.trackId !== trackId);
+    state.likedTracks = state.likedTracks.filter(
+      (track) => track.trackId !== trackId,
+    );
   };
+
+  // ДОБАВИТЬ ЭТОТ МЕТОД - обновление настроек
+  const updateSettings = (
+    newSettings: Partial<{ theme: "light" | "dark" }>,
+  ) => {
+    state.settings = {
+      ...state.settings,
+      ...newSettings,
+    };
+
+    // Сохраняем настройки в localStorage
+    localStorage.setItem("userSettings", JSON.stringify(state.settings));
+
+    // Применяем тему к документу
+    if (newSettings.theme) {
+      if (newSettings.theme === "dark") {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+      } else {
+        document.documentElement.classList.add("light");
+        document.documentElement.classList.remove("dark");
+      }
+    }
+  };
+
+  // Загрузка настроек из localStorage при инициализации
+  const loadSettingsFromStorage = () => {
+    const savedSettings = localStorage.getItem("userSettings");
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        state.settings = { ...state.settings, ...parsed };
+
+        // Применяем сохраненную тему
+        if (parsed.theme === "dark") {
+          document.documentElement.classList.add("dark");
+          document.documentElement.classList.remove("light");
+        } else if (parsed.theme === "light") {
+          document.documentElement.classList.add("light");
+          document.documentElement.classList.remove("dark");
+        }
+      } catch (error) {
+        console.error("Error loading settings from localStorage:", error);
+      }
+    }
+  };
+
+  // Загружаем настройки при создании store
+  if (typeof window !== "undefined") {
+    loadSettingsFromStorage();
+  }
 
   return {
     // State (для дебага или прямого доступа)
     state: readonly(state),
-    
+
     // Getters
     getEmail,
     getUsername,
@@ -69,6 +123,7 @@ export const useUserStore = defineStore("user", () => {
     isAuthenticated,
     isAlertUved,
     getSettings,
+
     // Actions
     setUser,
     clearUser,
@@ -76,5 +131,7 @@ export const useUserStore = defineStore("user", () => {
     addLikedTrack,
     removeLikedTrack,
     toggleUvedOpen,
+    updateSettings, // ДОБАВЛЕНО
+    loadSettingsFromStorage, // ДОБАВЛЕНО
   };
 });

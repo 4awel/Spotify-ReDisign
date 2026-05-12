@@ -5,7 +5,7 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await $fetch<LoginResponseType>(`${API_URL}/login`, {
+      const response = await $fetch<LoginResponseType>(`${API_URL}/auth/login`, {
         method: "POST",
         body: {
           email,
