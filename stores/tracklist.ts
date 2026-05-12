@@ -1,4 +1,6 @@
 import type { Track, Artist, Album } from "~/types";
+import axios from "axios";
+import { useUserStore } from "~/stores/user";
 
 interface TrackListState {
   chartTracks: Track[];
@@ -13,9 +15,6 @@ interface TrackListState {
   isLoading: boolean;
   currentOfset: number;
 }
-
-import axios from "axios";
-import { useUserStore } from "~/stores/user";
 
 export const useTracklistStore = defineStore("tracklist", () => {
   // State
@@ -45,16 +44,68 @@ export const useTracklistStore = defineStore("tracklist", () => {
   const isLiked = computed(() => state.isLiked);
   const currentOfset = computed(() => state.currentOfset);
 
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.warn("No token found in localStorage");
+      return {};
+    }
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+  };
+
+  // Create axios instance with base URL
+  const api = axios.create({
+    baseURL: "http://localhost:4000",
+    timeout: 10000,
+  });
+
+  // Request interceptor to add token to all requests
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      console.log(
+        `${config.method?.toUpperCase()} ${config.url}`,
+        config.params || config.data,
+      );
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    },
+  );
+
+  // Response interceptor to handle 401 errors
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401) {
+        console.error("Authentication failed, redirecting to login...");
+        localStorage.removeItem("token");
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }
+      return Promise.reject(error);
+    },
+  );
+
   // Actions
   const getChartTracks = async (id: string) => {
     state.loading = true;
     state.error = null;
     try {
-      console.log(id);
-      const response = await axios(`http://localhost:4000/deezer/api`, {
+      console.log("Fetching chart tracks for user:", id);
+      const response = await api.get("/deezer/api", {
         params: { userId: id },
       });
-      console.log(response.data);
+      console.log("Chart tracks received:", response.data);
       state.chartTracks = response.data;
       state.currentTrack = response.data[state.currentIndex];
     } catch (error: unknown) {
@@ -63,7 +114,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
       } else {
         state.error = "Unknown error";
       }
-      console.log(error);
+      console.log("Error fetching chart tracks:", error);
     } finally {
       state.loading = false;
     }
@@ -73,9 +124,10 @@ export const useTracklistStore = defineStore("tracklist", () => {
     state.isLoading = true;
     const userStore = useUserStore();
     const userId: string = userStore.getId;
-    console.log("Action!")
+    console.log("Fetching liked playlist for user:", userId);
+
     try {
-      const response = await axios("http://localhost:4000/liked/tracklist", {
+      const response = await api.get("/deezer/liked/tracklist", {
         params: {
           id: userId,
           limit: 20,
@@ -85,14 +137,14 @@ export const useTracklistStore = defineStore("tracklist", () => {
 
       state.favoriteTracks = [...state.favoriteTracks, ...response.data];
       state.currentOfset++;
-      console.log(state.favoriteTracks);
+      console.log("Liked tracks received:", state.favoriteTracks.length);
     } catch (error: unknown) {
       if (error instanceof Error) {
         state.error = error.message;
       } else {
         state.error = "Unknown error";
       }
-      console.log(error);
+      console.log("Error fetching liked playlist:", error);
     } finally {
       state.isLoading = false;
     }
@@ -101,31 +153,55 @@ export const useTracklistStore = defineStore("tracklist", () => {
   const postLikedTrack = async (trackId: number) => {
     state.error = null;
     const userStore = useUserStore();
-    const userId: string = userStore.getId;
+
+    if (!trackId) {
+      state.error = "Track ID Undefined";
+      return;
+    }
 
     try {
-      if (!trackId) return (state.error = "Track ID Undefined");
-      const response = await axios.put(
-        "http://localhost:4000/track/liked",
-        null,
-        {
-          params: {
-            trackId,
-            userId,
-          },
-        }
-      );
-      console.log(response.data.isLiked);
-      if (state.currentTrack)
+      console.log("Posting like for track:", trackId);
+
+      const response = await api.put("/track/liked", null, {
+        params: { trackId },
+      });
+      if (state.currentTrack?.id === trackId) {
         state.currentTrack.isLiked = response.data.isLiked;
-      await getChartTracks(userStore.getId);
+      }
+      const chartTrackIndex = state.chartTracks.findIndex(
+        (t) => t.id === trackId,
+      );
+      if (chartTrackIndex !== -1) {
+        const track = state.chartTracks[chartTrackIndex];
+        if (track) {
+          track.isLiked = response.data.isLiked;
+        }
+      }
+      if (response.data.isLiked) {
+        const likedTrack = state.chartTracks.find((t) => t.id === trackId);
+        if (likedTrack && !state.favoriteTracks.some((t) => t.id === trackId)) {
+          state.favoriteTracks = [
+            {
+              ...likedTrack,
+              isLiked: true,
+              addedAt: new Date().toISOString(),
+            },
+            ...state.favoriteTracks,
+          ];
+        }
+      } else {
+        // Удаляем из избранного
+        state.favoriteTracks = state.favoriteTracks.filter(
+          (t) => t.id !== trackId,
+        );
+      }
     } catch (error: unknown) {
+      console.error("Error posting like:", error);
       if (error instanceof Error) {
         state.error = error.message;
       } else {
         state.error = "Unknown error";
       }
-      console.log(error);
     }
   };
 
