@@ -2,6 +2,7 @@ export default defineNuxtConfig({
   modules: ["@pinia/nuxt"],
   css: ["~/assets/css/global.css"],
   ssr: true,
+
   runtimeConfig: {
     public: {
       apiBase: process.env.PORT_SERVER
@@ -17,5 +18,7 @@ export default defineNuxtConfig({
       viewport: "width=device-width, initial-scale=1.0",
       charset: "utf-8",
     },
-  }
+  },
+
+  compatibilityDate: "2026-05-12"
 });

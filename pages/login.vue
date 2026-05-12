@@ -217,7 +217,7 @@ const handleSignUp = async () => {
   }
 
   try {
-    await axios.post('http://localhost:4000/signup', {
+    await axios.post('http://localhost:4000/auth/signup', {
         username: signUpForm.value.username,
         password: signUpForm.value.password,
         email: signUpForm.value.email
