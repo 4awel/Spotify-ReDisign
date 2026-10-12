@@ -208,22 +208,30 @@ const handleSignUp = async () => {
 
   if (signUpForm.value.password !== signUpForm.value.confirmPassword) {
     alert("Passwords do not match!");
+    isLoading.value = false;
     return;
   }
 
   if (!signUpForm.value.acceptTerms) {
     alert("Please accept the Terms and Conditions");
+    isLoading.value = false;
     return;
   }
 
   try {
-    await axios.post('http://localhost:4000/auth/signup', {
+    await axios.post(`${useRuntimeConfig().public.apiBase}/auth/signup`, {
         username: signUpForm.value.username,
         password: signUpForm.value.password,
         email: signUpForm.value.email
     })
+    // После успешной регистрации сразу логиним пользователя
+    await login(signUpForm.value.email, signUpForm.value.password);
+    await navigateTo('/');
   } catch (err) {
-    if (err instanceof Error) {
+    if (err?.response?.data?.error) {
+      const serverError = err.response.data.error;
+      error.value = Array.isArray(serverError) ? serverError.join(', ') : serverError;
+    } else if (err instanceof Error) {
       error.value = err.message;
     } else {
       error.value = "Unknown error";

@@ -1,7 +1,7 @@
 import type { LoginResponseType } from "~/types/auth";
 import type { UserState } from "~/types/user";
 export const useAuth = () => {
-  const API_URL = `http://localhost:4000`;
+  const API_URL = useRuntimeConfig().public.apiBase;
 
   const login = async (email: string, password: string) => {
     try {

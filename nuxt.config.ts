@@ -1,13 +1,17 @@
 export default defineNuxtConfig({
   modules: ["@pinia/nuxt"],
   css: ["~/assets/css/global.css"],
-  ssr: true,
+  // Приложение клиентское (токен в localStorage), статический хостинг — SPA
+  ssr: false,
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.PORT_SERVER
-        ? `http://localhost:${process.env.PORT_SERVER}`
-        : "http://localhost:4000",
+      // В проде задаётся через NUXT_PUBLIC_API_BASE (адрес сервера на Render)
+      apiBase:
+        process.env.NUXT_PUBLIC_API_BASE ||
+        (process.env.PORT_SERVER
+          ? `http://localhost:${process.env.PORT_SERVER}`
+          : "http://localhost:4000"),
     },
   },
 

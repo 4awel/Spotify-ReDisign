@@ -15,6 +15,8 @@ interface SearchState {
 }
 
 export const useSearchStore = defineStore("search", () => {
+  const apiBase = useRuntimeConfig().public.apiBase;
+
   // State
   const state = reactive<SearchState>({
     searchModalValue: "",
@@ -41,7 +43,7 @@ export const useSearchStore = defineStore("search", () => {
     state.loading = true;
     state.error = null;
     try {
-      const response = await axios("http://localhost:4000/deezer/search", {
+      const response = await axios(`${apiBase}/deezer/search`, {
         params: {
           value: state.searchModalValue,
         },
@@ -61,7 +63,7 @@ export const useSearchStore = defineStore("search", () => {
   const getPlayListArtists = async (id: number) => {
     state.error = null;
     try {
-      const response = await axios("http://localhost:4000/artist/playlist", {
+      const response = await axios(`${apiBase}/deezer/artist/playlist`, {
         params: {
           id: id,
         },

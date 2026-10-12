@@ -5,6 +5,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { TrackModule } from './modules/track/track.module';
 import { DeezerModule } from './modules/deezer/deezer.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -25,5 +27,7 @@ import { DeezerModule } from './modules/deezer/deezer.module';
     TrackModule,
     DeezerModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

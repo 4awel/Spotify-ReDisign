@@ -8,14 +8,21 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Настройка CORS
+  // Настройка CORS: FRONTEND_URL может содержать несколько адресов через запятую
+  const frontendUrls = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((url) => url.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  const corsOrigins = [
+    'http://localhost:3008',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:8080',
+    ...frontendUrls,
+  ];
+
   app.enableCors({
-    origin: [
-      'http://localhost:3008',
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:8080',
-    ],
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: [
@@ -47,10 +54,11 @@ async function bootstrap() {
   // Global prefix (optional)
   // app.setGlobalPrefix('api');
 
-  const PORT = configService.get<number>('port.server') || 4000;
-  await app.listen(PORT);
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  // Локально — PORT_SERVER, на Render — PORT (выставляется платформой)
+  const PORT = Number(process.env.PORT_SERVER || process.env.PORT || 4000);
+  await app.listen(PORT, '0.0.0.0');
+  console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📝 Environment: ${configService.get<string>('NODE_ENV')}`);
-  console.log(`🔗 CORS enabled for origins: http://localhost:3008`);
+  console.log(`🔗 CORS enabled for origins: ${corsOrigins.join(', ')}`);
 }
 bootstrap();

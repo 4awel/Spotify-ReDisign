@@ -59,7 +59,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
 
   // Create axios instance with base URL
   const api = axios.create({
-    baseURL: "http://localhost:4000",
+    baseURL: useRuntimeConfig().public.apiBase as string,
     timeout: 10000,
   });
 
@@ -131,7 +131,7 @@ export const useTracklistStore = defineStore("tracklist", () => {
         params: {
           id: userId,
           limit: 20,
-          ofset: state.currentOfset,
+          offset: state.currentOfset,
         },
       });
 

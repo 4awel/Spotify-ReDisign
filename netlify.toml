@@ -9,3 +9,9 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+# SPA fallback: все маршруты отдаёт клиентский роутер
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

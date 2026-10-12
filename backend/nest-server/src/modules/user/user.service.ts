@@ -20,6 +20,11 @@ export class UserService {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async findByUsername(username: string): Promise<UserDocument | null> {
+    if (!username) return null;
+    return this.userModel.findOne({ username }).exec();
+  }
+
   async findById(id: string | Types.ObjectId): Promise<UserDocument | null> {
     if (!id || !Types.ObjectId.isValid(id.toString())) {
       return null;
